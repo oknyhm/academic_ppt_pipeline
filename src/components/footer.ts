@@ -1,23 +1,32 @@
 import { SAFE_MARGINS, SLIDE_HEIGHT, SLIDE_WIDTH, THEME } from "../theme.js";
 import type { PptxSlide } from "../pptx.js";
-import { assertElementsWithinBounds } from "../utils/bounds.js";
+import type { ElementBox } from "../utils/bounds.js";
 
-export function addFooter(slide: PptxSlide, deckTitle: string, pageNumber: number): void {
+export function addFooter(slide: PptxSlide, deckTitle: string, pageNumber: number): ElementBox[] {
   const footerBox = {
-    name: "footer",
+    id: "footer-title",
+    layer: "content" as const,
     x: SAFE_MARGINS.left,
     y: SLIDE_HEIGHT - SAFE_MARGINS.bottom - 0.18,
     w: 10.9,
     h: 0.14,
   };
   const pageBox = {
-    name: "page number",
+    id: "page-number",
+    layer: "content" as const,
     x: SLIDE_WIDTH - SAFE_MARGINS.right - 0.45,
     y: footerBox.y,
     w: 0.45,
     h: footerBox.h,
   };
-  assertElementsWithinBounds([footerBox, pageBox]);
+  const divider: ElementBox = {
+    id: "footer-divider",
+    layer: "decoration",
+    x: SAFE_MARGINS.left,
+    y: footerBox.y - 0.08,
+    w: SLIDE_WIDTH - SAFE_MARGINS.left - SAFE_MARGINS.right,
+    h: 0.01,
+  };
   slide.addShape("line", {
     x: SAFE_MARGINS.left,
     y: footerBox.y - 0.08,
@@ -47,4 +56,5 @@ export function addFooter(slide: PptxSlide, deckTitle: string, pageNumber: numbe
     color: THEME.colors.textSecondary,
     margin: 0,
   });
+  return [footerBox, pageBox, divider];
 }

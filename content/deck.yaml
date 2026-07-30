@@ -3,7 +3,7 @@ meta:
   language: zh-CN
 slides:
   - id: cover
-    type: title
+    layout: title-slide
     title: 结构化内容驱动的学术 PPT 生成流水线
     subtitle: 从可验证 YAML 到可编辑 PowerPoint
     author: 示例作者
@@ -11,7 +11,7 @@ slides:
     date: 2026-07-30
 
   - id: motivation
-    type: text
+    layout: text-slide
     title: 第一阶段目标
     sections:
       - heading: 可重复的内容构建
@@ -21,15 +21,48 @@ slides:
           - 保持文字和图示对象可编辑
       - heading: 明确边界
         bullets:
-          - 本阶段不接入图像 API、公式和复杂图示
+          - 本阶段不接入图像 API、公式和外部图示生成器
           - 先建立稳定的验证与构建基础
 
-  - id: workflow
-    type: text
-    title: 最小流水线
+  - id: visual-summary
+    layout: text-image-slide
+    title: 内容与布局分离
+    imagePosition: right
+    image:
+      path: ../assets/diagrams/semantic-layout.svg
+      alt: 抽象的结构化内容与版式关系示意
+      source: 项目内手工 SVG 资产
+    imageCaption: 装饰性示意图，不承载研究结论
     sections:
-      - heading: 当前生成步骤
+      - heading: 语义驱动
         bullets:
-          - 读取 content/deck.yaml 并完成 Zod 验证
-          - 将标题和正文写入可编辑 PowerPoint 文本框
-          - 输出到 output/generated/sample.pptx
+          - 内容只声明 layout 与可验证字段
+          - 布局组件统一管理页面坐标
+
+  - id: pipeline
+    layout: diagram-slide
+    title: 最小生成流程
+    diagram:
+      kind: linear-process
+      nodes:
+        - id: content
+          label: YAML 内容
+        - id: schema
+          label: Schema 验证
+        - id: pptx
+          label: 可编辑 PPTX
+
+  - id: results
+    layout: results-slide
+    title: 当前构建能力
+    metrics:
+      - label: 注册布局
+        value: "5"
+        detail: 统一返回元素元数据
+      - label: 自动检查
+        value: "2"
+        detail: 边界与非预期重叠
+      - label: 示例页面
+        value: "5"
+        detail: 覆盖全部布局
+    takeaway: 结构化内容、可编辑对象与自动验证可在同一构建流程中协作。

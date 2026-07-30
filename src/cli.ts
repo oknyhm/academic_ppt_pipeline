@@ -9,7 +9,7 @@ function printDeckSummary(deck: Deck): void {
   console.log(`Deck: ${deck.meta.title}`);
   console.log(`Slides: ${deck.slides.length}`);
   for (const [index, slide] of deck.slides.entries()) {
-    console.log(`${index + 1}. [${slide.type}] ${slide.id} — ${slide.title ?? "(untitled)"}`);
+    console.log(`${index + 1}. [${slide.layout}] ${slide.id} — ${slide.title ?? "(untitled)"}`);
   }
 }
 

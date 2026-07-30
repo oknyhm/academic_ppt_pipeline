@@ -46,3 +46,26 @@
 - `npm run lint`
 - `npm test`
 - `npm run build`
+
+## 阶段 3：可扩展布局与组件系统
+
+### 为什么修改
+
+随着布局数量增加，直接在生成入口中维护坐标和绘制分支会使验证与复用变得困难。因此需要让内容仅表达语义与布局名称，并将绘制坐标和元素验证集中到布局、组件和统一验证流程中。
+
+### 修改内容
+
+- 将页面判别字段由 `type` 重构为 `layout`，内容 YAML 不包含 `x`、`y`、`w`、`h` 等坐标。
+- 新增布局注册表与五种布局：`title-slide`、`text-slide`、`text-image-slide`、`diagram-slide`、`results-slide`。
+- 新增文本块、图片和指标卡组件；标题及页脚组件改为返回元素 Box 元数据。
+- 为每个元素声明 `background`、`decoration`、`content` 或 `overlay` 层级。
+- 在生成器中统一执行边界检查与非预期重叠检查；背景与明确标记的装饰重叠不报错。
+- 将示例内容扩展为覆盖全部五种布局，并使用项目内手工 SVG 装饰资产，不接入外部资产生成器。
+
+### 验证
+
+- `npm run format:check`
+- `npm run typecheck`
+- `npm run lint`
+- `npm test`
+- `npm run build`

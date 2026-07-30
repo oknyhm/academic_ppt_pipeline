@@ -41,3 +41,7 @@ npx tsx src/cli.ts validate path/to/deck.yaml
 - 规范内容文件为 `content/deck.yaml`。
 - 页面通过稳定的 `id` 和 `type` 声明，不在 YAML 中写入坐标。
 - 未来生成的 `.pptx` 只能写入 `output/generated/`，不得覆盖 `output/final-edited.pptx`。
+
+## Layout system
+
+Slides declare a stable `id`, a semantic `layout` name, and layout-specific content only. The sample deck covers `title-slide`, `text-slide`, `text-image-slide`, `diagram-slide`, and `results-slide`. Layouts own all coordinates and return layered element metadata (`background`, `decoration`, `content`, `overlay`) for bounds and overlap validation.

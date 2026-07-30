@@ -5,13 +5,12 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { parse } from "yaml";
 import { addFooter } from "./components/footer.js";
-import { renderTextImageLayout } from "./layouts/text-image.js";
-import { renderTextLayout } from "./layouts/text.js";
-import { renderTitleLayout } from "./layouts/title.js";
+import { renderLayout } from "./layouts/registry.js";
 import type { PptxPresentationConstructor } from "./pptx.js";
 import { SLIDE_HEIGHT, SLIDE_WIDTH, THEME } from "./theme.js";
 import { DeckSchema, type Deck, type TextImageSlide } from "./types.js";
 import type { ImageSize } from "./utils/image-fit.js";
+import { assertElementsWithinBounds, assertNoUnexpectedOverlap } from "./utils/bounds.js";
 
 const DEFAULT_DECK_PATH = "content/deck.yaml";
 const DEFAULT_OUTPUT_PATH = "output/generated/sample.pptx";
@@ -39,12 +38,23 @@ function imageSizeFromJpeg(buffer: Buffer): ImageSize | undefined {
   return undefined;
 }
 
+function imageSizeFromSvg(buffer: Buffer): ImageSize | undefined {
+  const source = buffer.toString("utf8");
+  const viewBox = source.match(
+    /viewBox=["']\s*\d+(?:\.\d+)?\s+\d+(?:\.\d+)?\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)/i,
+  );
+  if (viewBox) return { width: Number(viewBox[1]), height: Number(viewBox[2]) };
+  const width = source.match(/\bwidth=["'](\d+(?:\.\d+)?)/i);
+  const height = source.match(/\bheight=["'](\d+(?:\.\d+)?)/i);
+  return width && height ? { width: Number(width[1]), height: Number(height[1]) } : undefined;
+}
+
 export async function getImageSize(imagePath: string): Promise<ImageSize> {
   const buffer = await readFile(imagePath);
-  const size = imageSizeFromPng(buffer) ?? imageSizeFromJpeg(buffer);
+  const size = imageSizeFromPng(buffer) ?? imageSizeFromJpeg(buffer) ?? imageSizeFromSvg(buffer);
   if (!size || size.width <= 0 || size.height <= 0)
     throw new Error(
-      `Unsupported or invalid image file: ${imagePath}. Only PNG and JPEG are supported.`,
+      `Unsupported or invalid image file: ${imagePath}. Only PNG, JPEG, and SVG are supported.`,
     );
   return size;
 }
@@ -73,7 +83,7 @@ export async function generatePresentation(
 ): Promise<string> {
   const images = new Map<string, { path: string; size: ImageSize }>();
   for (const content of deck.slides)
-    if (content.type === "text-image")
+    if (content.layout === "text-image-slide")
       images.set(content.id, await resolveImage(content, deckDirectory));
 
   const pptx = new PptxPresentation();
@@ -85,15 +95,17 @@ export async function generatePresentation(
   pptx.theme = { headFontFace: THEME.fonts.chinese, bodyFontFace: THEME.fonts.chinese };
   for (const [index, content] of deck.slides.entries()) {
     const slide = pptx.addSlide();
-    slide.background = { color: THEME.colors.background };
-    if (content.type === "title") renderTitleLayout(slide, content);
-    else if (content.type === "text") renderTextLayout(slide, content);
-    else if (content.type === "text-image") {
-      const image = images.get(content.id);
-      if (!image) throw new Error(`Image preflight failed for slide "${content.id}".`);
-      renderTextImageLayout(slide, content, image.path, image.size);
-    } else throw new Error(`Unsupported slide type for this build: ${content.type}`);
-    addFooter(slide, deck.meta.title, index + 1);
+    const boxes = [
+      ...renderLayout(slide, content, { images }),
+      ...addFooter(slide, deck.meta.title, index + 1),
+    ];
+    try {
+      assertElementsWithinBounds(boxes);
+      assertNoUnexpectedOverlap(boxes);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Layout validation failed for slide "${content.id}": ${message}`);
+    }
   }
   const absoluteOutputPath = resolve(outputPath);
   await mkdir(resolve(absoluteOutputPath, ".."), { recursive: true });

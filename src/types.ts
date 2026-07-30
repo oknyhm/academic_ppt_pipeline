@@ -1,7 +1,13 @@
 import { z } from "zod";
 
-export const SlideTypeSchema = z.enum(["title", "text", "text-image", "diagram", "results"]);
-export type SlideType = z.infer<typeof SlideTypeSchema>;
+export const LayoutNameSchema = z.enum([
+  "title-slide",
+  "text-slide",
+  "text-image-slide",
+  "diagram-slide",
+  "results-slide",
+]);
+export type LayoutName = z.infer<typeof LayoutNameSchema>;
 
 export const CitationSchema = z.object({
   id: z.string().min(1),
@@ -37,7 +43,7 @@ const BaseSlideFields = {
 
 export const TitleSlideSchema = z.object({
   ...BaseSlideFields,
-  type: z.literal("title"),
+  layout: z.literal("title-slide"),
   title: z.string().min(1),
   subtitle: z.string().min(1).optional(),
   author: z.string().min(1).optional(),
@@ -48,7 +54,7 @@ export type TitleSlide = z.infer<typeof TitleSlideSchema>;
 
 export const TextSlideSchema = z.object({
   ...BaseSlideFields,
-  type: z.literal("text"),
+  layout: z.literal("text-slide"),
   title: z.string().min(1),
   sections: z.array(TextSectionSchema).min(1).max(2),
 });
@@ -56,7 +62,7 @@ export type TextSlide = z.infer<typeof TextSlideSchema>;
 
 export const TextImageSlideSchema = z.object({
   ...BaseSlideFields,
-  type: z.literal("text-image"),
+  layout: z.literal("text-image-slide"),
   title: z.string().min(1),
   sections: z.array(TextSectionSchema).min(1).max(2),
   image: AssetRefSchema,
@@ -72,7 +78,7 @@ export const DiagramNodeSchema = z.object({
 
 export const DiagramSlideSchema = z.object({
   ...BaseSlideFields,
-  type: z.literal("diagram"),
+  layout: z.literal("diagram-slide"),
   title: z.string().min(1),
   diagram: z.object({
     kind: z.enum(["linear-process", "three-branch", "module-boxes"]),
@@ -86,17 +92,18 @@ export const MetricSchema = z.object({
   value: z.string().min(1),
   detail: z.string().min(1).optional(),
 });
+export type Metric = z.infer<typeof MetricSchema>;
 
 export const ResultsSlideSchema = z.object({
   ...BaseSlideFields,
-  type: z.literal("results"),
+  layout: z.literal("results-slide"),
   title: z.string().min(1),
   metrics: z.array(MetricSchema).min(1).max(4).optional(),
   takeaway: z.string().min(1).optional(),
 });
 export type ResultsSlide = z.infer<typeof ResultsSlideSchema>;
 
-export const SlideSchema = z.discriminatedUnion("type", [
+export const SlideSchema = z.discriminatedUnion("layout", [
   TitleSlideSchema,
   TextSlideSchema,
   TextImageSlideSchema,

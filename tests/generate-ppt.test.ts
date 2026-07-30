@@ -8,7 +8,7 @@ it("reports a missing image asset before writing a presentation", async () => {
     slides: [
       {
         id: "missing-image",
-        type: "text-image",
+        layout: "text-image-slide",
         title: "Missing image",
         imagePosition: "right",
         image: { path: "not-found.png", alt: "Missing test image" },
