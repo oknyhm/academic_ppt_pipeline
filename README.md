@@ -64,4 +64,12 @@ LaTeX inputs live in `content/equations.yaml`. The MathJax-based generator write
 npm run equations
 ```
 
-Unchanged formulas are skipped. The sample deck uses generated equations for forward propagation, cross-entropy, and gradient descent; equation SVGs are inserted as images while slide titles and explanations remain editable PowerPoint text. `npm run build` runs chart and equation generation before rendering the 7-slide sample deck.
+Unchanged formulas are skipped. Each formula produces a transparent SVG source and a 3,000-pixel-wide transparent PNG rendering. The sample deck embeds the SVG as the Office 2019+ vector resource and packages a real 3,000-pixel-wide PNG fallback for compatibility; titles and explanations remain editable PowerPoint text. `npm run build` runs chart and equation generation before rendering the 7-slide sample deck.
+
+## Editable process diagrams
+
+`diagram-slide` uses only native PowerPoint shapes, text, and arrow connectors. Content declares a fixed-template `kind`, semantic nodes, edges, and optional node emphasis—never coordinates. Supported templates are `linear-process`, `three-branch`, and `input-process-output`. Long node labels are emitted as validation warnings in `output/validation-report.json`; bounds and unexpected overlap remain build errors.
+
+## PowerPoint SVG compatibility
+
+For every embedded SVG (formulas and charts), the generator repairs PptxGenJS's invalid PNG fallback media after writing the package. SVG remains the primary vector asset, while a real transparent PNG fallback is embedded for Office compatibility. This avoids the PowerPoint “found a problem with content” repair prompt.

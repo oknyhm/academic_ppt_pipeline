@@ -1,5 +1,102 @@
 # 阶段变更留痕
 
+## 阶段 11：Office 2024+ 的 SVG 主资源与 PNG 回退
+
+### 为什么修改？
+
+目标环境为本机 PowerPoint 2024，公式应以矢量 SVG 显示；同时需要保留高分辨率 PNG，供不支持 SVG 的 Office 使用。
+
+### 修改内容
+
+- 公式 SVG 将 MathJax 的 `currentColor` 规范化为主题主文字色，避免 Office SVG 渲染器无法继承 CSS 颜色而显示空白；manifest 渲染版本使旧 SVG 缓存自动失效。
+- 示例 deck 恢复引用 SVG。
+- PPTX 写入后将 SVG 的 PNG 主 blip 回退重建为真实透明、3,000 像素宽 PNG；`asvg:svgBlip` 保持指向 SVG。
+- 回归测试检查公式页同时存在主 PNG 关系与 `asvg:svgBlip` SVG 关系，并验证 PNG 回退尺寸。
+- 更新 README、架构、内容 schema 与故障排除文档。
+
+### 验证
+
+- 运行公式生成、TypeScript 检查、lint、测试、完整构建，并用本机 PowerPoint 2024 打开生成文件。
+
+## 阶段 10：提高公式 PNG 的显示分辨率
+
+### 为什么修改？
+
+SVG 改用 PNG 嵌入后，默认栅格尺寸在 PowerPoint 的公式展示框和高倍率缩放下出现明显模糊。
+
+### 修改内容
+
+- 公式 PNG 改为由 resvg 以固定 3,000 像素宽度渲染，保持透明背景和纵横比。
+- manifest 新增 `pngWidth`；旧的低分辨率缓存会自动失效并重新生成。
+- 公式测试增加最小输出像素宽度断言；更新 README、架构、schema 和故障排除文档。
+
+### 验证
+
+- 运行公式生成、TypeScript 检查、lint、测试、完整构建，并用 PowerPoint 打开新文件。
+
+## 阶段 9：公式的 PowerPoint PNG 嵌入回退
+
+### 为什么修改？
+
+部分 PowerPoint 版本可打开生成文件，但不渲染 MathJax 公式 SVG 主媒体，导致公式区域空白。
+
+### 修改内容
+
+- 公式生成器现在为每个稳定公式 ID 同时输出透明 SVG 源文件和透明 PNG 渲染文件。
+- manifest 记录 SVG 与 PNG 路径；仅当哈希和两种文件都存在时跳过生成。
+- 示例 deck 的三页公式改为引用 PNG，以保证 PowerPoint 显示；SVG 与 LaTeX 继续保留用于复现。
+- 更新 README、架构、schema 和故障排除文档。
+
+### 验证
+
+- 新增测试验证每个公式 SVG 可转换为带有效 PNG 文件签名的透明回退图。
+- 运行 TypeScript 检查、lint、测试和完整构建，并用 PowerPoint 打开生成文件。
+
+## 阶段 8：PowerPoint SVG 回退兼容性修复
+
+### 为什么修改
+
+PowerPoint 在打开 `sample.pptx` 时提示内容错误。检查压缩包后发现 PptxGenJS 为 SVG 写出的 `.png` 回退媒体实际包含 SVG/XML 字节，违反 PNG 内容类型。
+
+### 修改内容
+
+- 增加 resvg 栅格化与 JSZip 重打包依赖。
+- 在 PPTX 写入后替换所有伪 PNG SVG 回退媒体为真实透明 PNG，同时保留 SVG 主媒体。
+- 修复流程图向上箭头产生的负 OOXML 变换尺寸，改为非负范围加翻转标记。
+- 新增回归测试，检查所有嵌入 PNG 媒体都以标准 PNG 签名开头。
+- 回归测试同时检查 slide XML 无负变换尺寸；PowerPoint COM 自动化已成功打开修复后的 7 页文件。
+- 更新 README、架构和故障排除文档；内容 schema 无字段变化，已审查无需修改。
+
+### 验证
+
+- XML 与关系部件结构检查。
+- `npm run typecheck`
+- `npm run lint`
+- `npm test`
+- `npm run build`
+
+## 阶段 7：原生可编辑流程图组件
+
+### 为什么修改
+
+示例需要表达人脸语义解耦与水印检测的关系，但技术流程不应依赖整页图片或不可编辑图示。因此以固定模板提供可验证的原生节点和连接线。
+
+### 修改内容
+
+- 扩展 diagram schema：节点、边、强调状态和三种固定模板。
+- 新增原生圆角模块节点与带箭头连接线组件；所有节点标签可在 PowerPoint 中编辑。
+- 为图示加入节点 ID/边引用校验、Box 边界和重叠验证，以及长节点文本警告。
+- 构建将警告写入 `output/validation-report.json`。
+- 将示例中的流程图替换为输入人脸、语义编码器、身份/表情/属性三分支、水印绑定和盲检测。
+- 更新 README、架构、内容 schema 与故障排除文档。
+
+### 验证
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm test`
+- `npm run build`
+
 ## 阶段 6：可复现公式 SVG 流水线与神经网络示例
 
 ### 为什么修改

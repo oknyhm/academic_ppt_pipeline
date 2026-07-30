@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
 import { DeckSchema } from "../src/types.js";
+import { getDiagramTextWarnings } from "../src/layouts/diagram-slide.js";
 import { assertElementsWithinBounds, assertNoUnexpectedOverlap } from "../src/utils/bounds.js";
 import { containImage, coverImage } from "../src/utils/image-fit.js";
 
@@ -23,6 +24,10 @@ describe("DeckSchema", () => {
         "diagram-slide",
         "results-slide",
       ]);
+      const faceDiagram = result.data.slides.find(
+        (slide) => slide.id === "face-semantic-disentanglement",
+      );
+      expect(faceDiagram?.layout).toBe("diagram-slide");
     }
   });
 
@@ -43,6 +48,32 @@ describe("DeckSchema", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0]?.message).toContain("Duplicate slide id");
+    }
+  });
+
+  it("rejects diagram edges that reference missing nodes", () => {
+    const result = DeckSchema.safeParse({
+      meta: { title: "Invalid diagram" },
+      slides: [
+        {
+          id: "diagram",
+          layout: "diagram-slide",
+          title: "Invalid edge",
+          diagram: {
+            kind: "linear-process",
+            nodes: [
+              { id: "input", label: "Input" },
+              { id: "output", label: "Output" },
+            ],
+            edges: [{ from: "input", to: "missing" }],
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toContain("existing node ids");
     }
   });
 });
@@ -82,5 +113,22 @@ describe("layout helpers", () => {
         { id: "content", layer: "content", x: 1, y: 1, w: 2, h: 1 },
       ]),
     ).not.toThrow();
+  });
+
+  it("warns when a diagram node label is too long", () => {
+    const warnings = getDiagramTextWarnings("diagram", {
+      kind: "linear-process",
+      nodes: [
+        {
+          id: "input",
+          label: "A deliberately long diagram node label that needs shortening",
+          emphasis: "normal",
+        },
+        { id: "output", label: "Output", emphasis: "normal" },
+      ],
+      edges: [{ from: "input", to: "output" }],
+    });
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("long text");
   });
 });

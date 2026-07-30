@@ -3,6 +3,7 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { Resvg } from "@resvg/resvg-js";
 import { mathjax } from "mathjax-full/js/mathjax.js";
 import { TeX } from "mathjax-full/js/input/tex.js";
 import { AllPackages } from "mathjax-full/js/input/tex/AllPackages.js";
@@ -11,10 +12,13 @@ import { liteAdaptor } from "mathjax-full/js/adaptors/liteAdaptor.js";
 import { RegisterHTMLHandler } from "mathjax-full/js/handlers/html.js";
 import { z } from "zod";
 import { parse } from "yaml";
+import { THEME } from "../src/theme.js";
 
 const PROJECT_ROOT = resolve(import.meta.dirname, "..");
 const DEFAULT_SOURCE_PATH = resolve(PROJECT_ROOT, "content/equations.yaml");
 const DEFAULT_OUTPUT_DIR = resolve(PROJECT_ROOT, "assets/equations");
+export const EQUATION_PNG_WIDTH = 3_000;
+const EQUATION_RENDER_VERSION = "office-svg-v1";
 
 export const EquationDefinitionSchema = z.object({
   id: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Equation id must be lowercase kebab-case."),
@@ -44,6 +48,9 @@ interface EquationManifestEntry {
   latex: string;
   sha256: string;
   svg: string;
+  png: string;
+  pngWidth: number;
+  renderVersion: string;
 }
 
 interface EquationManifest {
@@ -73,10 +80,26 @@ export function renderLatexToSvg(latex: string): string {
     if (!svg || svg.includes("<rect")) {
       throw new Error("MathJax did not return a transparent SVG formula.");
     }
-    return svg;
+    return svg
+      .replace(/currentColor/g, `#${THEME.colors.textPrimary}`)
+      .replace(/\sstyle="vertical-align:[^"]*"/i, "");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Invalid LaTeX "${latex}": ${message}`);
+  }
+}
+
+export function renderSvgToPng(svg: string): Buffer {
+  try {
+    return new Resvg(svg, {
+      background: "rgba(0,0,0,0)",
+      fitTo: { mode: "width", value: EQUATION_PNG_WIDTH },
+    })
+      .render()
+      .asPng();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Unable to create transparent PNG equation fallback: ${message}`);
   }
 }
 
@@ -114,16 +137,35 @@ export async function generateEquations(
 
   for (const equation of input.equations) {
     const svgPath = resolve(outputDir, `${equation.id}.svg`);
+    const pngPath = resolve(outputDir, `${equation.id}.png`);
     const svg = `assets/equations/${equation.id}.svg`;
+    const png = `assets/equations/${equation.id}.png`;
     const sha256 = hashLatex(equation.latex);
     const previous = previousManifest.equations[equation.id];
-    if (previous?.sha256 === sha256 && previous.svg === svg && (await outputExists(svgPath))) {
+    if (
+      previous?.sha256 === sha256 &&
+      previous.svg === svg &&
+      previous.png === png &&
+      previous.pngWidth === EQUATION_PNG_WIDTH &&
+      previous.renderVersion === EQUATION_RENDER_VERSION &&
+      (await outputExists(svgPath)) &&
+      (await outputExists(pngPath))
+    ) {
       skipped.push(equation.id);
     } else {
-      await writeFile(svgPath, renderLatexToSvg(equation.latex), "utf8");
+      const renderedSvg = renderLatexToSvg(equation.latex);
+      await writeFile(svgPath, renderedSvg, "utf8");
+      await writeFile(pngPath, renderSvgToPng(renderedSvg));
       generated.push(equation.id);
     }
-    nextManifest.equations[equation.id] = { latex: equation.latex, sha256, svg };
+    nextManifest.equations[equation.id] = {
+      latex: equation.latex,
+      sha256,
+      svg,
+      png,
+      pngWidth: EQUATION_PNG_WIDTH,
+      renderVersion: EQUATION_RENDER_VERSION,
+    };
   }
   await writeFile(manifestPath, `${JSON.stringify(nextManifest, null, 2)}\n`, "utf8");
   return { generated, skipped };
@@ -131,8 +173,10 @@ export async function generateEquations(
 
 async function main(): Promise<void> {
   const result = await generateEquations();
-  for (const id of result.generated) console.log(`Generated assets/equations/${id}.svg`);
-  for (const id of result.skipped) console.log(`Skipped unchanged assets/equations/${id}.svg`);
+  for (const id of result.generated)
+    console.log(`Generated assets/equations/${id}.svg and assets/equations/${id}.png`);
+  for (const id of result.skipped)
+    console.log(`Skipped unchanged assets/equations/${id}.svg and assets/equations/${id}.png`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

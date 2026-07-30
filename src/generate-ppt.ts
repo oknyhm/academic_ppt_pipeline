@@ -1,8 +1,10 @@
 import { constants } from "node:fs";
-import { access, mkdir, readFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { Resvg } from "@resvg/resvg-js";
+import JSZip from "jszip";
 import { parse } from "yaml";
 import { addFooter } from "./components/footer.js";
 import { renderLayout } from "./layouts/registry.js";
@@ -11,11 +13,48 @@ import { SLIDE_HEIGHT, SLIDE_WIDTH, THEME } from "./theme.js";
 import { DeckSchema, type AssetRef, type Deck } from "./types.js";
 import type { ImageSize } from "./utils/image-fit.js";
 import { assertElementsWithinBounds, assertNoUnexpectedOverlap } from "./utils/bounds.js";
+import { getSlideWarnings, type ValidationWarning } from "./validation.js";
 
 const DEFAULT_DECK_PATH = "content/deck.yaml";
 const DEFAULT_OUTPUT_PATH = "output/generated/sample.pptx";
+const SVG_FALLBACK_WIDTH = 3_000;
 const require = createRequire(import.meta.url);
 const PptxPresentation = require("pptxgenjs") as PptxPresentationConstructor;
+
+function isSvgMedia(buffer: Buffer): boolean {
+  return buffer.toString("utf8", 0, Math.min(buffer.length, 256)).includes("<svg");
+}
+
+export async function repairSvgFallbacks(pptxPath: string): Promise<number> {
+  const archive = await JSZip.loadAsync(await readFile(pptxPath));
+  let repaired = 0;
+  for (const entry of Object.values(archive.files)) {
+    if (entry.dir || !entry.name.startsWith("ppt/media/") || !entry.name.endsWith(".png")) continue;
+    const media = await entry.async("nodebuffer");
+    if (!isSvgMedia(media)) continue;
+    let png: Buffer;
+    try {
+      png = new Resvg(media, {
+        background: "rgba(0,0,0,0)",
+        fitTo: { mode: "width", value: SVG_FALLBACK_WIDTH },
+      })
+        .render()
+        .asPng();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Unable to create a PNG fallback for ${entry.name}: ${message}`);
+    }
+    archive.file(entry.name, png);
+    repaired += 1;
+  }
+  if (repaired > 0) {
+    await writeFile(
+      pptxPath,
+      await archive.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }),
+    );
+  }
+  return repaired;
+}
 
 function imageSizeFromPng(buffer: Buffer): ImageSize | undefined {
   if (buffer.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a" || buffer.length < 24)
@@ -85,6 +124,7 @@ export async function generatePresentation(
 ): Promise<string> {
   const images = new Map<string, { path: string; size: ImageSize }>();
   const charts = new Map<string, { path: string; size: ImageSize }>();
+  const warnings: ValidationWarning[] = [];
   for (const content of deck.slides)
     if (content.layout === "text-image-slide")
       images.set(content.id, await resolveAsset(content.id, content.image, deckDirectory, "image"));
@@ -111,10 +151,17 @@ export async function generatePresentation(
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Layout validation failed for slide "${content.id}": ${message}`);
     }
+    warnings.push(...getSlideWarnings(content));
   }
   const absoluteOutputPath = resolve(outputPath);
   await mkdir(resolve(absoluteOutputPath, ".."), { recursive: true });
   await pptx.writeFile({ fileName: absoluteOutputPath, compression: true });
+  const repairedFallbacks = await repairSvgFallbacks(absoluteOutputPath);
+  if (repairedFallbacks > 0)
+    console.log(`Repaired ${repairedFallbacks} SVG PNG fallbacks for Office compatibility.`);
+  const reportPath = resolve(dirname(dirname(absoluteOutputPath)), "validation-report.json");
+  await writeFile(reportPath, `${JSON.stringify({ valid: true, warnings }, null, 2)}\n`, "utf8");
+  for (const warning of warnings) console.warn(`Validation warning: ${warning.message}`);
   return absoluteOutputPath;
 }
 

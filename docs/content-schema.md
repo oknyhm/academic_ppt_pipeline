@@ -1,5 +1,27 @@
 # 内容 Schema
 
+## 流程图
+
+`diagram-slide` 只描述节点与边，不写坐标。节点可选 `emphasis`：`normal`、`primary`、`accent`、`warning`。边使用节点 ID：
+
+```yaml
+layout: diagram-slide
+title: 人脸语义解耦
+diagram:
+  kind: three-branch
+  nodes:
+    - id: input
+      label: 输入人脸
+    - id: encoder
+      label: 语义编码器
+      emphasis: primary
+  edges:
+    - from: input
+      to: encoder
+```
+
+`linear-process` 支持 2–7 个节点；`input-process-output` 固定为 3 个节点；`three-branch` 固定为 7 个节点，按输入、处理、三个分支、绑定、输出的顺序映射。每条边必须引用已有且不同的节点 ID。
+
 ## 公式源文件
 
 公式独立存放在 `content/equations.yaml`。每个条目必须有稳定的小写 kebab-case `id` 和非空 LaTeX：
@@ -11,7 +33,7 @@ equations:
     description: 可选的公式说明。
 ```
 
-生成后，deck 用普通 `image` 资产引用 `../assets/equations/<id>.svg`。源 LaTeX 与输出路径的映射在 `assets/equations/manifest.json` 中保存。
+生成后会得到 `../assets/equations/<id>.svg`（Office 2019+ 的矢量主资源）和以固定 3,000 像素宽度渲染的 `../assets/equations/<id>.png`（回退图）。示例 deck 用普通 `image` 资产引用 SVG；生成器会在 PPTX 中把 PNG 作为主 blip 回退、SVG 作为 `asvg:svgBlip` 扩展。源 LaTeX、两种输出路径与 PNG 宽度在 `assets/equations/manifest.json` 中保存。
 
 规范内容文件是 `content/deck.yaml`，并由 `src/types.ts` 中的 Zod schema 验证。内容文件不能包含 `x`、`y`、`w` 或 `h` 坐标；坐标只存在于注册布局中。
 

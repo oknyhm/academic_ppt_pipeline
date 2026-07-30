@@ -5,17 +5,26 @@
     "neural-forward": {
       "latex": "\\mathbf{h} = \\sigma(\\mathbf{W}\\mathbf{x} + \\mathbf{b})",
       "sha256": "6beefc7377fc5cbdf8929f805294a22d14dbba7c3207a9b979bbb9fa54c2dd37",
-      "svg": "assets/equations/neural-forward.svg"
+      "svg": "assets/equations/neural-forward.svg",
+      "png": "assets/equations/neural-forward.png",
+      "pngWidth": 3000,
+      "renderVersion": "office-svg-v1"
     },
     "cross-entropy": {
       "latex": "\\mathcal{L} = -\\sum_{k=1}^{K} y_k \\log(\\hat{y}_k)",
       "sha256": "5e626ce5db57119d94faf03ac4f7588e4d0f1a3a5808ee8fe7aac67e12375155",
-      "svg": "assets/equations/cross-entropy.svg"
+      "svg": "assets/equations/cross-entropy.svg",
+      "png": "assets/equations/cross-entropy.png",
+      "pngWidth": 3000,
+      "renderVersion": "office-svg-v1"
     },
     "gradient-descent": {
       "latex": "\\boldsymbol{\\theta}_{t+1} = \\boldsymbol{\\theta}_t - \\eta \\nabla_{\\boldsymbol{\\theta}} \\mathcal{L}(\\boldsymbol{\\theta}_t)",
       "sha256": "57bf199ab01bffcb6bfca54c659942a792bfefcff2b4a6fbac9d5c97105e01e2",
-      "svg": "assets/equations/gradient-descent.svg"
+      "svg": "assets/equations/gradient-descent.svg",
+      "png": "assets/equations/gradient-descent.png",
+      "pngWidth": 3000,
+      "renderVersion": "office-svg-v1"
     }
   }
 }

@@ -1,8 +1,16 @@
 # 系统架构
 
+## 可编辑流程图
+
+`diagram-slide` 由 `process-node` 和 `connector` 组件构成，节点文本、圆角矩形和箭头均为 PptxGenJS 原生对象。布局只提供 `linear-process`、`three-branch`、`input-process-output` 三个固定模板，不提供任意图自动布局。每个节点和连接线都返回 Box 元数据；生成器统一检查越界、重叠及节点文本长度警告，并把警告写入 `output/validation-report.json`。连接线的 OOXML 变换范围始终写为非负值，向上/向左连线通过翻转标记表达方向。
+
+## Office SVG 回退修复
+
+PptxGenJS 4.0.1 会把 SVG 资源的 PNG 回退媒体错误地写为 SVG 字节。`src/generate-ppt.ts` 在写入 PPTX 后扫描 `ppt/media/*.png`，将实际 SVG 内容用 resvg 栅格化为透明 PNG，再用 JSZip 重打包。SVG 主媒体不变，Office 读取的 PNG 回退有效。
+
 ## 公式 SVG 流水线
 
-`content/equations.yaml` 中的 LaTeX 表达式由 `scripts/generate-equations.ts` 使用 MathJax 转换为 `assets/equations/<stable-id>.svg`。每个 SVG 透明且只含单个公式；`assets/equations/manifest.json` 保存源 LaTeX、SHA-256 和输出路径映射。构建会先运行 `npm run equations`，哈希未变化且目标 SVG 存在时跳过渲染。deck 的公式页面通过标准 `text-image-slide.image` 引用 SVG，因此标题和说明仍是 PowerPoint 原生可编辑文本。
+`content/equations.yaml` 中的 LaTeX 表达式由 `scripts/generate-equations.ts` 使用 MathJax 转换为 Office 兼容的 `assets/equations/<stable-id>.svg`：`currentColor` 被规范化为主题主文字色。脚本同时用 resvg 以固定 3,000 像素宽度生成同 ID 的透明 PNG。`assets/equations/manifest.json` 保存源 LaTeX、SHA-256、两种输出路径及 PNG 宽度。构建在 SVG 和 PNG 均存在、哈希与 PNG 宽度未变化时跳过渲染。公式页引用 SVG；PptxGenJS 在 PPTX 中将 PNG 放于主 `a:blip`，SVG 放于 Office 2019+ 的 `asvg:svgBlip` 扩展。写包后处理器会把该 PNG 回退重建为真实的 3,000 像素宽 PNG。标题和说明仍是 PowerPoint 原生可编辑文本。
 
 ## 构建流程
 

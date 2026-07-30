@@ -76,20 +76,49 @@ slides:
           - 反向传播计算损失对参数的梯度
           - 沿负梯度方向更新以降低训练目标
 
-  - id: training-loop
+  - id: face-semantic-disentanglement
     layout: diagram-slide
-    title: 一个最小训练闭环
+    title: 人脸语义解耦与水印检测流程
     diagram:
-      kind: linear-process
+      kind: three-branch
       nodes:
-        - id: input
-          label: 输入与标签
-        - id: forward
-          label: 前向预测
-        - id: loss
-          label: 计算损失
-        - id: update
-          label: 梯度更新
+        - id: face-input
+          label: 输入人脸
+        - id: encoder
+          label: 语义编码器
+          emphasis: primary
+        - id: identity
+          label: 身份
+          emphasis: accent
+        - id: expression
+          label: 表情
+          emphasis: accent
+        - id: attributes
+          label: 属性
+          emphasis: accent
+        - id: watermark
+          label: 水印绑定
+          emphasis: primary
+        - id: blind-detection
+          label: 盲检测
+          emphasis: warning
+      edges:
+        - from: face-input
+          to: encoder
+        - from: encoder
+          to: identity
+        - from: encoder
+          to: expression
+        - from: encoder
+          to: attributes
+        - from: identity
+          to: watermark
+        - from: expression
+          to: watermark
+        - from: attributes
+          to: watermark
+        - from: watermark
+          to: blind-detection
 
   - id: metrics
     layout: results-slide

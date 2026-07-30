@@ -74,16 +74,68 @@ export type TextImageSlide = z.infer<typeof TextImageSlideSchema>;
 export const DiagramNodeSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
+  emphasis: z.enum(["normal", "primary", "accent", "warning"]).default("normal"),
 });
+export type DiagramNode = z.infer<typeof DiagramNodeSchema>;
+
+export const DiagramEdgeSchema = z.object({
+  from: z.string().min(1),
+  to: z.string().min(1),
+  label: z.string().min(1).optional(),
+});
+export type DiagramEdge = z.infer<typeof DiagramEdgeSchema>;
+
+export const DiagramSchema = z
+  .object({
+    kind: z.enum(["linear-process", "three-branch", "input-process-output"]),
+    nodes: z.array(DiagramNodeSchema).min(2).max(7),
+    edges: z.array(DiagramEdgeSchema).min(1).max(10),
+  })
+  .superRefine((diagram, context) => {
+    const nodeIds = new Set<string>();
+    diagram.nodes.forEach((node, index) => {
+      if (nodeIds.has(node.id)) {
+        context.addIssue({
+          code: "custom",
+          path: ["nodes", index, "id"],
+          message: `Duplicate diagram node id: ${node.id}`,
+        });
+      }
+      nodeIds.add(node.id);
+    });
+    diagram.edges.forEach((edge, index) => {
+      if (!nodeIds.has(edge.from) || !nodeIds.has(edge.to)) {
+        context.addIssue({
+          code: "custom",
+          path: ["edges", index],
+          message: `Diagram edge must reference existing node ids: ${edge.from} -> ${edge.to}`,
+        });
+      }
+      if (edge.from === edge.to) {
+        context.addIssue({
+          code: "custom",
+          path: ["edges", index],
+          message: "Diagram edge cannot connect a node to itself.",
+        });
+      }
+    });
+    const requiredCount =
+      diagram.kind === "three-branch" ? 7 : diagram.kind === "input-process-output" ? 3 : undefined;
+    if (requiredCount && diagram.nodes.length !== requiredCount) {
+      context.addIssue({
+        code: "custom",
+        path: ["nodes"],
+        message: `${diagram.kind} requires exactly ${requiredCount} nodes for its fixed template.`,
+      });
+    }
+  });
+export type Diagram = z.infer<typeof DiagramSchema>;
 
 export const DiagramSlideSchema = z.object({
   ...BaseSlideFields,
   layout: z.literal("diagram-slide"),
   title: z.string().min(1),
-  diagram: z.object({
-    kind: z.enum(["linear-process", "three-branch", "module-boxes"]),
-    nodes: z.array(DiagramNodeSchema).min(2).max(6),
-  }),
+  diagram: DiagramSchema,
 });
 export type DiagramSlide = z.infer<typeof DiagramSlideSchema>;
 
