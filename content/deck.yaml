@@ -1,0 +1,35 @@
+meta:
+  title: 结构化内容驱动的学术 PPT 生成流水线
+  language: zh-CN
+slides:
+  - id: cover
+    type: title
+    title: 结构化内容驱动的学术 PPT 生成流水线
+    subtitle: 从可验证 YAML 到可编辑 PowerPoint
+    author: 示例作者
+    affiliation: 示例研究组
+    date: 2026-07-30
+
+  - id: motivation
+    type: text
+    title: 第一阶段目标
+    sections:
+      - heading: 可重复的内容构建
+        bullets:
+          - 使用 YAML 保存研究叙事和页面语义
+          - 使用 Zod 在渲染前验证内容结构
+          - 保持文字和图示对象可编辑
+      - heading: 明确边界
+        bullets:
+          - 本阶段不接入图像 API、公式和复杂图示
+          - 先建立稳定的验证与构建基础
+
+  - id: workflow
+    type: text
+    title: 最小流水线
+    sections:
+      - heading: 当前生成步骤
+        bullets:
+          - 读取 content/deck.yaml 并完成 Zod 验证
+          - 将标题和正文写入可编辑 PowerPoint 文本框
+          - 输出到 output/generated/sample.pptx
