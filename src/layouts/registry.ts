@@ -9,6 +9,7 @@ import type { ElementBox } from "../utils/bounds.js";
 import type { ImageSize } from "../utils/image-fit.js";
 
 export interface RenderContext {
+  charts: ReadonlyMap<string, { path: string; size: ImageSize }>;
   images: ReadonlyMap<string, { path: string; size: ImageSize }>;
 }
 
@@ -30,6 +31,6 @@ export function renderLayout(
     case "diagram-slide":
       return renderDiagramSlide(slide, content);
     case "results-slide":
-      return renderResultsSlide(slide, content);
+      return renderResultsSlide(slide, content, context.charts.get(content.id));
   }
 }

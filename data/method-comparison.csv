@@ -1,0 +1,5 @@
+method,architecture,top1_accuracy,source
+SimCLR,ResNet-50 4x,76.8,SwAV Table 5 (arXiv:2006.09882)
+SwAV,ResNet-50 2x,77.3,SwAV Table 5 (arXiv:2006.09882)
+SwAV,ResNet-50 4x,77.9,SwAV Table 5 (arXiv:2006.09882)
+SwAV,ResNet-50 5x,78.5,SwAV Table 5 (arXiv:2006.09882)

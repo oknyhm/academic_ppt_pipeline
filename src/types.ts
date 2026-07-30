@@ -99,6 +99,8 @@ export const ResultsSlideSchema = z.object({
   layout: z.literal("results-slide"),
   title: z.string().min(1),
   metrics: z.array(MetricSchema).min(1).max(4).optional(),
+  chart: AssetRefSchema.optional(),
+  chartCaption: z.string().min(1).optional(),
   takeaway: z.string().min(1).optional(),
 });
 export type ResultsSlide = z.infer<typeof ResultsSlideSchema>;

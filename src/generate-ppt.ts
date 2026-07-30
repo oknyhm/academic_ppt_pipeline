@@ -8,7 +8,7 @@ import { addFooter } from "./components/footer.js";
 import { renderLayout } from "./layouts/registry.js";
 import type { PptxPresentationConstructor } from "./pptx.js";
 import { SLIDE_HEIGHT, SLIDE_WIDTH, THEME } from "./theme.js";
-import { DeckSchema, type Deck, type TextImageSlide } from "./types.js";
+import { DeckSchema, type AssetRef, type Deck } from "./types.js";
 import type { ImageSize } from "./utils/image-fit.js";
 import { assertElementsWithinBounds, assertNoUnexpectedOverlap } from "./utils/bounds.js";
 
@@ -59,15 +59,17 @@ export async function getImageSize(imagePath: string): Promise<ImageSize> {
   return size;
 }
 
-async function resolveImage(
-  slide: TextImageSlide,
+async function resolveAsset(
+  slideId: string,
+  asset: AssetRef,
   deckDirectory: string,
+  assetKind: "chart" | "image",
 ): Promise<{ path: string; size: ImageSize }> {
-  const imagePath = resolve(deckDirectory, slide.image.path);
+  const imagePath = resolve(deckDirectory, asset.path);
   try {
     await access(imagePath, constants.R_OK);
   } catch {
-    throw new Error(`Missing image asset for slide "${slide.id}": ${imagePath}`);
+    throw new Error(`Missing ${assetKind} asset for slide "${slideId}": ${imagePath}`);
   }
   return { path: imagePath, size: await getImageSize(imagePath) };
 }
@@ -82,9 +84,12 @@ export async function generatePresentation(
   outputPath: string,
 ): Promise<string> {
   const images = new Map<string, { path: string; size: ImageSize }>();
+  const charts = new Map<string, { path: string; size: ImageSize }>();
   for (const content of deck.slides)
     if (content.layout === "text-image-slide")
-      images.set(content.id, await resolveImage(content, deckDirectory));
+      images.set(content.id, await resolveAsset(content.id, content.image, deckDirectory, "image"));
+    else if (content.layout === "results-slide" && content.chart)
+      charts.set(content.id, await resolveAsset(content.id, content.chart, deckDirectory, "chart"));
 
   const pptx = new PptxPresentation();
   pptx.defineLayout({ name: "ACADEMIC_WIDE", width: SLIDE_WIDTH, height: SLIDE_HEIGHT });
@@ -96,7 +101,7 @@ export async function generatePresentation(
   for (const [index, content] of deck.slides.entries()) {
     const slide = pptx.addSlide();
     const boxes = [
-      ...renderLayout(slide, content, { images }),
+      ...renderLayout(slide, content, { images, charts }),
       ...addFooter(slide, deck.meta.title, index + 1),
     ];
     try {

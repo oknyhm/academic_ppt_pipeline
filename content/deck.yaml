@@ -1,6 +1,13 @@
 meta:
   title: 结构化内容驱动的学术 PPT 生成流水线
   language: zh-CN
+  citations:
+    - id: swav-table-5
+      text: Caron et al. SwAV, Table 5, ImageNet linear evaluation.
+      url: https://arxiv.org/abs/2006.09882
+    - id: simclr-table-b2
+      text: Chen et al. SimCLR, Table B.2, fine-tuning accuracy by width and label fraction.
+      url: https://arxiv.org/abs/2002.05709
 slides:
   - id: cover
     layout: title-slide
@@ -55,6 +62,14 @@ slides:
   - id: results
     layout: results-slide
     title: 当前构建能力
+    citations:
+      - swav-table-5
+      - simclr-table-b2
+    chart:
+      path: ../assets/charts/method-comparison.svg
+      alt: 已发表 ImageNet 线性评估 top-1 准确率的横向条形图
+      source: data/method-comparison.csv
+    chartCaption: 已发表结果示例；模型架构不同，不应解读为受控比较。
     metrics:
       - label: 注册布局
         value: "5"

@@ -45,3 +45,13 @@ npx tsx src/cli.ts validate path/to/deck.yaml
 ## Layout system
 
 Slides declare a stable `id`, a semantic `layout` name, and layout-specific content only. The sample deck covers `title-slide`, `text-slide`, `text-image-slide`, `diagram-slide`, and `results-slide`. Layouts own all coordinates and return layered element metadata (`background`, `decoration`, `content`, `overlay`) for bounds and overlap validation.
+
+## Research charts
+
+Chart source data is stored under `data/`; `scripts/generate_charts.py` validates required columns, missing values, and numeric fields before generating one SVG and one PNG fallback per CSV in `assets/charts/`. The script uses pandas and matplotlib only (no seaborn or 3D charts). Install the pinned Python dependencies with `python -m pip install -r requirements-charts.txt`, then run:
+
+```powershell
+npm run charts
+```
+
+`npm run build` runs the chart step first. Results slides may reference a local chart asset; the chart is inserted as an image while the slide title and takeaway remain editable PowerPoint text. The supplied CSV values are traceable published examples: SwAV Table 5 and SimCLR Table B.2, whose source references are declared in `content/deck.yaml`.

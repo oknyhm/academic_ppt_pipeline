@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "validate": "tsx src/cli.ts validate",
-    "build": "npm run validate && tsx src/generate-ppt.ts",
+    "charts": "python scripts/generate_charts.py",
+    "build": "npm run charts && npm run validate && tsx src/generate-ppt.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write --ignore-unknown package.json tsconfig.json eslint.config.js prettier.config.cjs vitest.config.ts src tests content README.md .gitignore .env.example",

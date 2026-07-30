@@ -47,6 +47,28 @@
 - `npm test`
 - `npm run build`
 
+## 阶段 4：可复现科研图表流水线
+
+### 为什么修改
+
+科研图表需要由可检查的原始数据稳定再生，并与可编辑的 PowerPoint 标题和结论分离，避免将研究结论固化为不可维护的整页截图。
+
+### 修改内容
+
+- 添加两份带来源字段的 CSV：公开论文中的 SwAV Table 5 与 SimCLR Table B.2 示例数据。
+- 添加仅依赖 pandas 和 matplotlib 的图表脚本；不使用 seaborn、3D 图表或外部资产生成器。
+- 脚本验证列名、空值和数值字段，并对每张图输出独立 SVG 与 PNG 备用文件。
+- 为结果布局增加可选 chart 语义槽位；图表作为本地图片插入，标题与 takeaway 继续使用 PowerPoint 可编辑文本。
+- 添加 `npm run charts`，并令完整构建先生成图表。
+
+### 验证
+
+- `npm run charts`
+- `npm run typecheck`
+- `npm run lint`
+- `npm test`
+- `npm run build`
+
 ## 阶段 3：可扩展布局与组件系统
 
 ### 为什么修改

@@ -1,0 +1,10 @@
+architecture,label_fraction,top1_accuracy,source
+ResNet-50,1,49.4,SimCLR Table B.2 (arXiv:2002.05709)
+ResNet-50,10,66.1,SimCLR Table B.2 (arXiv:2002.05709)
+ResNet-50,100,76.0,SimCLR Table B.2 (arXiv:2002.05709)
+ResNet-50 2x,1,59.4,SimCLR Table B.2 (arXiv:2002.05709)
+ResNet-50 2x,10,71.8,SimCLR Table B.2 (arXiv:2002.05709)
+ResNet-50 2x,100,79.1,SimCLR Table B.2 (arXiv:2002.05709)
+ResNet-50 4x,1,64.1,SimCLR Table B.2 (arXiv:2002.05709)
+ResNet-50 4x,10,74.8,SimCLR Table B.2 (arXiv:2002.05709)
+ResNet-50 4x,100,80.4,SimCLR Table B.2 (arXiv:2002.05709)
