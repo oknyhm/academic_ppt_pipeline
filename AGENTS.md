@@ -457,6 +457,14 @@ Keep these files current:
 * `docs/troubleshooting.md`: common failures
 * `.env.example`: optional environment variables
 
+After every implementation, content, configuration, or build-behavior change, update `docs/stage.md` with why the change was made, what changed, and how it was verified.
+
+For every such change, review and attempt to update all of the following documentation in the same task; update each file whose described behavior, interface, workflow, or failure mode is affected:
+
+* `docs/architecture.md`
+* `docs/content-schema.md`
+* `docs/troubleshooting.md`
+
 When behavior changes, update the relevant documentation in the same task.
 
 ## Definition of done

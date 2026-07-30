@@ -55,3 +55,13 @@ npm run charts
 ```
 
 `npm run build` runs the chart step first. Results slides may reference a local chart asset; the chart is inserted as an image while the slide title and takeaway remain editable PowerPoint text. The supplied CSV values are traceable published examples: SwAV Table 5 and SimCLR Table B.2, whose source references are declared in `content/deck.yaml`.
+
+## Equations
+
+LaTeX inputs live in `content/equations.yaml`. The MathJax-based generator writes transparent SVG formulas to `assets/equations/` and records the LaTeX-to-file mapping and SHA-256 hashes in `assets/equations/manifest.json`.
+
+```powershell
+npm run equations
+```
+
+Unchanged formulas are skipped. The sample deck uses generated equations for forward propagation, cross-entropy, and gradient descent; equation SVGs are inserted as images while slide titles and explanations remain editable PowerPoint text. `npm run build` runs chart and equation generation before rendering the 7-slide sample deck.

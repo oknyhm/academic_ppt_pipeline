@@ -13,10 +13,12 @@ describe("DeckSchema", () => {
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.slides).toHaveLength(5);
+      expect(result.data.slides).toHaveLength(7);
       expect(result.data.slides.map((slide) => slide.layout)).toEqual([
         "title-slide",
         "text-slide",
+        "text-image-slide",
+        "text-image-slide",
         "text-image-slide",
         "diagram-slide",
         "results-slide",

@@ -1,5 +1,5 @@
 meta:
-  title: 结构化内容驱动的学术 PPT 生成流水线
+  title: 神经网络原理与指标概览
   language: zh-CN
   citations:
     - id: swav-table-5
@@ -11,57 +11,89 @@ meta:
 slides:
   - id: cover
     layout: title-slide
-    title: 结构化内容驱动的学术 PPT 生成流水线
-    subtitle: 从可验证 YAML 到可编辑 PowerPoint
+    title: 神经网络原理与指标概览
+    subtitle: 从前向传播、损失优化到已发表基准结果
     author: 示例作者
     affiliation: 示例研究组
     date: 2026-07-30
 
-  - id: motivation
+  - id: principles
     layout: text-slide
-    title: 第一阶段目标
+    title: 神经网络的基本组成
     sections:
-      - heading: 可重复的内容构建
+      - heading: 表示学习
         bullets:
-          - 使用 YAML 保存研究叙事和页面语义
-          - 使用 Zod 在渲染前验证内容结构
-          - 保持文字和图示对象可编辑
-      - heading: 明确边界
+          - 输入特征经由多层线性变换与非线性激活
+          - 中间表示逐层提取适合任务的特征
+          - 输出层产生分类概率或连续预测
+      - heading: 训练目标
         bullets:
-          - 本阶段不接入图像 API、公式和外部图示生成器
-          - 先建立稳定的验证与构建基础
+          - 损失函数衡量预测与目标之间的差异
+          - 优化算法按梯度迭代更新模型参数
 
-  - id: visual-summary
+  - id: forward-pass
     layout: text-image-slide
-    title: 内容与布局分离
+    title: 前向传播：线性变换与激活
     imagePosition: right
     image:
-      path: ../assets/diagrams/semantic-layout.svg
-      alt: 抽象的结构化内容与版式关系示意
-      source: 项目内手工 SVG 资产
-    imageCaption: 装饰性示意图，不承载研究结论
+      path: ../assets/equations/neural-forward.svg
+      alt: h 等于 sigma 括号 W x 加 b 括号的前向传播公式
+      source: content/equations.yaml#neural-forward
+    imageCaption: 公式 SVG 由 LaTeX 源可重复生成。
     sections:
-      - heading: 语义驱动
+      - heading: 从输入到隐藏表示
         bullets:
-          - 内容只声明 layout 与可验证字段
-          - 布局组件统一管理页面坐标
+          - W 与 b 是可学习参数
+          - 激活函数 sigma 引入非线性表达能力
 
-  - id: pipeline
+  - id: objective
+    layout: text-image-slide
+    title: 监督学习：交叉熵目标
+    imagePosition: left
+    image:
+      path: ../assets/equations/cross-entropy.svg
+      alt: 多类别交叉熵损失公式
+      source: content/equations.yaml#cross-entropy
+    imageCaption: 损失越低表示预测分布越接近目标标签。
+    sections:
+      - heading: 评价单个训练目标
+        bullets:
+          - y 表示目标标签的独热编码
+          - y 帽表示模型给出的预测概率
+
+  - id: optimization
+    layout: text-image-slide
+    title: 参数优化：梯度下降
+    imagePosition: right
+    image:
+      path: ../assets/equations/gradient-descent.svg
+      alt: 基于损失梯度的参数更新公式
+      source: content/equations.yaml#gradient-descent
+    imageCaption: 学习率 eta 决定每一步更新的尺度。
+    sections:
+      - heading: 迭代更新
+        bullets:
+          - 反向传播计算损失对参数的梯度
+          - 沿负梯度方向更新以降低训练目标
+
+  - id: training-loop
     layout: diagram-slide
-    title: 最小生成流程
+    title: 一个最小训练闭环
     diagram:
       kind: linear-process
       nodes:
-        - id: content
-          label: YAML 内容
-        - id: schema
-          label: Schema 验证
-        - id: pptx
-          label: 可编辑 PPTX
+        - id: input
+          label: 输入与标签
+        - id: forward
+          label: 前向预测
+        - id: loss
+          label: 计算损失
+        - id: update
+          label: 梯度更新
 
-  - id: results
+  - id: metrics
     layout: results-slide
-    title: 当前构建能力
+    title: 已发表的表示学习指标示例
     citations:
       - swav-table-5
       - simclr-table-b2
@@ -71,13 +103,13 @@ slides:
       source: data/method-comparison.csv
     chartCaption: 已发表结果示例；模型架构不同，不应解读为受控比较。
     metrics:
-      - label: 注册布局
-        value: "5"
-        detail: 统一返回元素元数据
-      - label: 自动检查
-        value: "2"
-        detail: 边界与非预期重叠
-      - label: 示例页面
-        value: "5"
-        detail: 覆盖全部布局
-    takeaway: 结构化内容、可编辑对象与自动验证可在同一构建流程中协作。
+      - label: SwAV R50-w5
+        value: "78.5%"
+        detail: Table 5 线性评估 top-1
+      - label: SimCLR R50-w4
+        value: "76.8%"
+        detail: Table 5 线性评估 top-1
+      - label: SimCLR 微调
+        value: "80.4%"
+        detail: Table B.2，100% 标签
+    takeaway: 模型指标必须连同数据集、架构和评估协议一起解读。

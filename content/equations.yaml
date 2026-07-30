@@ -1,0 +1,10 @@
+equations:
+  - id: neural-forward
+    latex: "\\mathbf{h} = \\sigma(\\mathbf{W}\\mathbf{x} + \\mathbf{b})"
+    description: 神经元层的前向传播与非线性激活。
+  - id: cross-entropy
+    latex: "\\mathcal{L} = -\\sum_{k=1}^{K} y_k \\log(\\hat{y}_k)"
+    description: 多类别分类任务的交叉熵损失。
+  - id: gradient-descent
+    latex: "\\boldsymbol{\\theta}_{t+1} = \\boldsymbol{\\theta}_t - \\eta \\nabla_{\\boldsymbol{\\theta}} \\mathcal{L}(\\boldsymbol{\\theta}_t)"
+    description: 基于梯度的参数更新规则。
