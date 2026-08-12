@@ -23,6 +23,13 @@
 - 若 PowerPoint 2024+ 中公式区域空白，请重新运行 `npm run equations && npm run build`；示例 deck 应引用 `assets/equations/<id>.svg`，生成器会同时嵌入 SVG 与 PNG 回退。若问题持续，检查公式 SVG 是否仍含 `currentColor`。
 - 若旧版 Office 显示的是回退图且在大倍率缩放时模糊，确认 manifest 中的 `pngWidth` 为 `3000`，然后运行 `npm run equations && npm run build` 重新生成高分辨率 PNG 与 PPTX。
 
+## `npm run images` 跳过或失败
+
+- `Skipping AI image generation: OPENAI_API_KEY is not configured` 是正常状态；设置环境变量后再运行即可。主 `npm run build` 不依赖它，并继续使用封面的原生纯色背景。
+- `Image prompt must include ...` 表示提示词缺少必需的无文字、无标签、无数字、无公式或无水印约束；修正 `content/image-prompts.yaml`，不要通过脚本绕过。
+- 429 与 5xx 请求最多重试三次；其他 API 错误会记录为该插图的非阻断失败。检查 API 组织验证、额度和密钥权限后再运行。
+- 不要把 `assets/generated/` 的插图用作实验数据、模型架构证据、公式或引用来源。
+
 ## `npm run charts` 失败
 
 - 确认 Python 3.12 或兼容版本可用：`python --version`。

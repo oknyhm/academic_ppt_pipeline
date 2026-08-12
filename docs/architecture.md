@@ -4,6 +4,8 @@
 
 `diagram-slide` 由 `process-node` 和 `connector` 组件构成，节点文本、圆角矩形和箭头均为 PptxGenJS 原生对象。布局只提供 `linear-process`、`three-branch`、`input-process-output` 三个固定模板，不提供任意图自动布局。每个节点和连接线都返回 Box 元数据；生成器统一检查越界、重叠及节点文本长度警告，并把警告写入 `output/validation-report.json`。连接线的 OOXML 变换范围始终写为非负值，向上/向左连线通过翻转标记表达方向。
 
+当前示例 deck 是 10 页能力展厅：覆盖全部五种注册布局、三种固定流程图模板、三张公式 SVG 页以及两张 CSV 驱动的结果页。它是布局与组件的可视化回归样本，而非新的研究结论。
+
 ## Office SVG 回退修复
 
 PptxGenJS 4.0.1 会把 SVG 资源的 PNG 回退媒体错误地写为 SVG 字节。`src/generate-ppt.ts` 在写入 PPTX 后扫描 `ppt/media/*.png`，将实际 SVG 内容用 resvg 栅格化为透明 PNG，再用 JSZip 重打包。SVG 主媒体不变，Office 读取的 PNG 回退有效。
@@ -22,6 +24,10 @@ data/*.csv ─────────┤
 ```
 
 `npm run build` 先运行 `npm run charts`，再验证 deck，最后生成 PPTX。因此结果页引用的图表始终来自当前 CSV 输入。
+
+## 可选 AI 插图
+
+`scripts/generate-images.ts` 是独立的可选分支，不被 `npm run build` 调用，也不参与核心 PPT 生成依赖图。它读取 `content/image-prompts.yaml`，只接受 `cover` 与 `conceptual` 两种非权威插图用途，并强制提示词包含 `no text`、`no labels`、`no numbers`、`no formula` 和 `no watermark`。当存在 `OPENAI_API_KEY` 时，它通过官方 Node SDK 的 Image API 调用 `gpt-image-2`，在 `assets/generated/<id>.png` 写入 PNG，并在 `assets/generated/manifest.json` 保存提示词、模型、尺寸、质量、生成时间与哈希。哈希与文件均匹配时跳过；瞬态请求最多尝试三次，所有 API 失败只影响 `npm run images` 的该资源，不影响主构建。无密钥时命令正常跳过，标题页的原生纯色背景即为视觉回退。
 
 ## 主要模块
 

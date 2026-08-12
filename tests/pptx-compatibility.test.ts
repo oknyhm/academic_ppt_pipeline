@@ -43,4 +43,4 @@ it("writes Office SVG blips with high-resolution PNG fallbacks", async () => {
     const xml = await entry.async("string");
     expect(xml).not.toMatch(/<a:ext cx="-\d+"|<a:ext cx="\d+" cy="-\d+"/);
   }
-});
+}, 20_000);

@@ -7,6 +7,7 @@
     "validate": "tsx src/cli.ts validate",
     "charts": "python scripts/generate_charts.py",
     "equations": "tsx scripts/generate-equations.ts",
+    "images": "tsx scripts/generate-images.ts",
     "build": "npm run charts && npm run equations && npm run validate && tsx src/generate-ppt.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -32,5 +33,8 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0",
     "vitest": "^3.2.4"
+  },
+  "optionalDependencies": {
+    "openai": "^7.1.0"
   }
 }

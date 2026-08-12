@@ -14,7 +14,7 @@ describe("DeckSchema", () => {
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.slides).toHaveLength(7);
+      expect(result.data.slides).toHaveLength(10);
       expect(result.data.slides.map((slide) => slide.layout)).toEqual([
         "title-slide",
         "text-slide",
@@ -22,12 +22,15 @@ describe("DeckSchema", () => {
         "text-image-slide",
         "text-image-slide",
         "diagram-slide",
+        "diagram-slide",
+        "diagram-slide",
+        "results-slide",
         "results-slide",
       ]);
-      const faceDiagram = result.data.slides.find(
-        (slide) => slide.id === "face-semantic-disentanglement",
-      );
-      expect(faceDiagram?.layout).toBe("diagram-slide");
+      const diagramKinds = result.data.slides
+        .filter((slide) => slide.layout === "diagram-slide")
+        .map((slide) => slide.diagram.kind);
+      expect(diagramKinds).toEqual(["linear-process", "input-process-output", "three-branch"]);
     }
   });
 

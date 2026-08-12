@@ -1,5 +1,5 @@
 meta:
-  title: 神经网络原理与指标概览
+  title: 结构化学术 PPT 流水线能力展厅
   language: zh-CN
   citations:
     - id: swav-table-5
@@ -11,74 +11,123 @@ meta:
 slides:
   - id: cover
     layout: title-slide
-    title: 神经网络原理与指标概览
-    subtitle: 从前向传播、损失优化到已发表基准结果
+    title: 结构化学术 PPT 流水线能力展厅
+    subtitle: 可编辑文本、原生图形、公式 SVG 与可复现科研图表
     author: 示例作者
-    affiliation: 示例研究组
+    affiliation: Structured Academic PPT Pipeline
     date: 2026-07-30
 
-  - id: principles
+  - id: text-layout
     layout: text-slide
-    title: 神经网络的基本组成
+    title: 文本布局与主题组件
     sections:
-      - heading: 表示学习
+      - heading: 可编辑的页面家具
         bullets:
-          - 输入特征经由多层线性变换与非线性激活
-          - 中间表示逐层提取适合任务的特征
-          - 输出层产生分类概率或连续预测
-      - heading: 训练目标
+          - 标题、正文、页脚和页码均为 PowerPoint 原生文本
+          - 背景、卡片边框与强调条均为原生形状
+          - 内容 YAML 只描述语义，不写坐标
+      - heading: 构建时的质量控制
         bullets:
-          - 损失函数衡量预测与目标之间的差异
-          - 优化算法按梯度迭代更新模型参数
+          - Zod 校验内容结构、引用与资源路径
+          - 每页执行边界检查与非预期重叠检查
+          - 警告写入 validation-report.json 便于审阅
 
   - id: forward-pass
     layout: text-image-slide
-    title: 前向传播：线性变换与激活
+    title: 公式 SVG：前向传播
     imagePosition: right
     image:
       path: ../assets/equations/neural-forward.svg
-      alt: h 等于 sigma 括号 W x 加 b 括号的前向传播公式
+      alt: 神经网络前向传播公式 h 等于 sigma 括号 W x 加 b 括号
       source: content/equations.yaml#neural-forward
-    imageCaption: 公式 SVG 由 LaTeX 源可重复生成。
+    imageCaption: SVG 为 Office 2024+ 矢量资源；同时携带高分辨率 PNG 回退。
     sections:
-      - heading: 从输入到隐藏表示
+      - heading: 图文布局
         bullets:
-          - W 与 b 是可学习参数
-          - 激活函数 sigma 引入非线性表达能力
+          - 公式保持独立、可复现的 LaTeX 源
+          - 标题和说明仍是可编辑文本对象
+          - 图片区域采用 contain，保持原始比例
 
-  - id: objective
+  - id: cross-entropy
     layout: text-image-slide
-    title: 监督学习：交叉熵目标
+    title: 公式 SVG：交叉熵目标
     imagePosition: left
     image:
       path: ../assets/equations/cross-entropy.svg
-      alt: 多类别交叉熵损失公式
+      alt: 多分类交叉熵损失公式
       source: content/equations.yaml#cross-entropy
-    imageCaption: 损失越低表示预测分布越接近目标标签。
+    imageCaption: 每个稳定公式 ID 同时映射 LaTeX、SVG 和 PNG 回退。
     sections:
-      - heading: 评价单个训练目标
+      - heading: 公式资产流水线
         bullets:
-          - y 表示目标标签的独热编码
-          - y 帽表示模型给出的预测概率
+          - MathJax 生成透明背景 SVG
+          - 主题文字色显式写入 SVG，避免 currentColor 兼容问题
+          - 未修改的公式资产自动跳过重建
 
-  - id: optimization
+  - id: gradient-descent
     layout: text-image-slide
-    title: 参数优化：梯度下降
+    title: 公式 SVG：梯度下降
     imagePosition: right
     image:
       path: ../assets/equations/gradient-descent.svg
       alt: 基于损失梯度的参数更新公式
       source: content/equations.yaml#gradient-descent
-    imageCaption: 学习率 eta 决定每一步更新的尺度。
+    imageCaption: 包内主 blip 使用真实 3000 像素宽 PNG 回退。
     sections:
-      - heading: 迭代更新
+      - heading: Office 兼容封装
         bullets:
-          - 反向传播计算损失对参数的梯度
-          - 沿负梯度方向更新以降低训练目标
+          - 主 a:blip 指向 PNG，兼容旧版阅读器
+          - asvg:svgBlip 指向 SVG，供 PowerPoint 2024+ 矢量显示
+          - 构建后自动检查媒体签名与关系结构
 
-  - id: face-semantic-disentanglement
+  - id: linear-process
     layout: diagram-slide
-    title: 人脸语义解耦与水印检测流程
+    title: 原生流程图：线性流程
+    diagram:
+      kind: linear-process
+      nodes:
+        - id: yaml
+          label: YAML 内容
+        - id: validation
+          label: Zod 验证
+          emphasis: primary
+        - id: rendering
+          label: PPTX 生成
+          emphasis: accent
+        - id: review
+          label: PowerPoint 检查
+          emphasis: warning
+      edges:
+        - from: yaml
+          to: validation
+        - from: validation
+          to: rendering
+        - from: rendering
+          to: review
+
+  - id: input-process-output
+    layout: diagram-slide
+    title: 原生流程图：输入—处理—输出
+    diagram:
+      kind: input-process-output
+      nodes:
+        - id: source
+          label: YAML、CSV 与 LaTeX
+        - id: pipeline
+          label: 布局、组件与验证
+          emphasis: primary
+        - id: output
+          label: 可编辑 PowerPoint
+          emphasis: accent
+      edges:
+        - from: source
+          to: pipeline
+        - from: pipeline
+          to: output
+
+  - id: three-branch
+    layout: diagram-slide
+    title: 原生流程图：三分支模板
     diagram:
       kind: three-branch
       nodes:
@@ -120,25 +169,46 @@ slides:
         - from: watermark
           to: blind-detection
 
-  - id: metrics
+  - id: method-comparison
     layout: results-slide
-    title: 已发表的表示学习指标示例
+    title: 结果布局：方法比较图与指标卡
     citations:
       - swav-table-5
-      - simclr-table-b2
     chart:
       path: ../assets/charts/method-comparison.svg
-      alt: 已发表 ImageNet 线性评估 top-1 准确率的横向条形图
+      alt: ImageNet 线性评估 top-1 准确率横向条形图
       source: data/method-comparison.csv
-    chartCaption: 已发表结果示例；模型架构不同，不应解读为受控比较。
+    chartCaption: 图表由 method-comparison.csv 与 matplotlib 可复现生成。
     metrics:
-      - label: SwAV R50-w5
+      - label: 最佳 SwAV
         value: "78.5%"
-        detail: Table 5 线性评估 top-1
-      - label: SimCLR R50-w4
-        value: "76.8%"
-        detail: Table 5 线性评估 top-1
-      - label: SimCLR 微调
+        detail: ResNet-50 5x，线性评估 top-1
+      - label: 比较方法
+        value: "4"
+        detail: 同一已发表表格中的条目数
+      - label: 资产格式
+        value: SVG + PNG
+        detail: 矢量主资源与兼容回退
+    takeaway: 研究结论、标题和指标卡保持为 PowerPoint 原生可编辑对象。
+
+  - id: ablation-results
+    layout: results-slide
+    title: 结果布局：消融曲线与结论条
+    citations:
+      - simclr-table-b2
+    chart:
+      path: ../assets/charts/ablation.svg
+      alt: 不同 ResNet 宽度和标签比例下的 top-1 准确率折线图
+      source: data/ablation.csv
+    chartCaption: 图表由 ablation.csv 生成；展示标签比例与模型宽度的联合影响。
+    metrics:
+      - label: R50 4x
         value: "80.4%"
-        detail: Table B.2，100% 标签
-    takeaway: 模型指标必须连同数据集、架构和评估协议一起解读。
+        detail: 100% 标签微调
+      - label: 1% 标签
+        value: "64.1%"
+        detail: R50 4x 微调
+      - label: 数据行数
+        value: "9"
+        detail: 3 种宽度 × 3 种标签比例
+    takeaway: 图表数据与来源分离保存，更新 CSV 后可稳定重建。

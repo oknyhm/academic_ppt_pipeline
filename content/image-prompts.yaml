@@ -1,0 +1,16 @@
+images:
+  - id: cover-neural-network-concept
+    purpose: cover
+    size: 1536x1024
+    prompt: >-
+      Restrained academic editorial illustration of an abstract neural network as softly connected
+      translucent nodes and flowing signal paths, deep navy and pale blue palette, generous negative
+      space for a presentation cover, calm scientific atmosphere, no text, no labels, no numbers,
+      no formula, no watermark.
+  - id: representation-learning-concept
+    purpose: conceptual
+    size: 1536x1024
+    prompt: >-
+      Conceptual scientific illustration of information becoming progressively organized through layered
+      geometric transformations, clean academic visual language, subtle navy and blue gradients on a light
+      background, no experimental plots or claims, no text, no labels, no numbers, no formula, no watermark.

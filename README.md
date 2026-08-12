@@ -36,6 +36,8 @@ npx tsx src/cli.ts validate path/to/deck.yaml
 
 当前不包含图像 API、LaTeX/MathJax、Mermaid、LibreOffice、图表、公式、流程图或复杂动画。
 
+> Current implementation note: the two preceding scaffold-era sentences are obsolete. The project now supports all five registered layouts, PNG/JPEG/SVG assets, reproducible charts, MathJax equations, and native diagrams. AI illustrations are optional only; they are not part of `npm run build` and are never used as technical evidence.
+
 ## Project conventions
 
 - 规范内容文件为 `content/deck.yaml`。
@@ -64,7 +66,18 @@ LaTeX inputs live in `content/equations.yaml`. The MathJax-based generator write
 npm run equations
 ```
 
-Unchanged formulas are skipped. Each formula produces a transparent SVG source and a 3,000-pixel-wide transparent PNG rendering. The sample deck embeds the SVG as the Office 2019+ vector resource and packages a real 3,000-pixel-wide PNG fallback for compatibility; titles and explanations remain editable PowerPoint text. `npm run build` runs chart and equation generation before rendering the 7-slide sample deck.
+Unchanged formulas are skipped. Each formula produces a transparent SVG source and a 3,000-pixel-wide transparent PNG rendering. The sample deck embeds the SVG as the Office 2019+ vector resource and packages a real 3,000-pixel-wide PNG fallback for compatibility; titles and explanations remain editable PowerPoint text. `npm run build` runs chart and equation generation before rendering the 10-slide capability showcase.
+
+## Optional AI illustrations
+
+AI illustrations are isolated from the core PowerPoint build. `npm run build` never calls the image API and the title layout continues to use its native pure-color background when no generated illustration exists. To opt in, set `OPENAI_API_KEY` in your PowerShell environment, then run:
+
+```powershell
+$env:OPENAI_API_KEY = "your_key"
+npm run images
+```
+
+`content/image-prompts.yaml` permits only `cover` and `conceptual` images. Every prompt must prohibit text, labels, numbers, formulas, and watermarks. The optional official `openai` SDK uses the Image API with `gpt-image-2`; generated PNGs and prompt/model/size/time/hash metadata are stored in `assets/generated/`. Unchanged requests are skipped. Missing keys and transient API failures do not block `npm run build`.
 
 ## Editable process diagrams
 
