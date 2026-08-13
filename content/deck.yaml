@@ -11,6 +11,7 @@ meta:
 slides:
   - id: cover
     layout: title-slide
+    illustrationId: cover-neural-network-concept
     title: 结构化学术 PPT 流水线能力展厅
     subtitle: 可编辑文本、原生图形、公式 SVG 与可复现科研图表
     author: 示例作者

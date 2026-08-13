@@ -52,16 +52,24 @@ export function renderResultsSlide(
       const caption: ElementBox = {
         id: "chart-caption",
         layer: "content",
+        kind: "text",
         x: frame.x,
         y: 6.25,
         w: frame.w,
         h: 0.18,
+        text: content.chartCaption,
+        fontSize: THEME.fontSizes.caption,
+        minimumFontSize: THEME.fontSizes.minimum,
+        fit: "shrink",
       };
       boxes.push(caption);
       slide.addText(content.chartCaption, {
-        ...caption,
+        x: caption.x,
+        y: caption.y,
+        w: caption.w,
+        h: caption.h,
         fontFace: THEME.fonts.chinese,
-        fontSize: THEME.fontSizes.caption,
+        fontSize: caption.fontSize,
         color: THEME.colors.textSecondary,
         align: "center",
         margin: 0,
@@ -73,10 +81,15 @@ export function renderResultsSlide(
     const takeaway: ElementBox = {
       id: "takeaway",
       layer: "overlay",
+      kind: "text",
       x: 1.1,
       y: chart ? 6.47 : 4.35,
       w: 11.13,
       h: chart ? 0.32 : 0.62,
+      text: content.takeaway,
+      fontSize: THEME.fontSizes.body,
+      minimumFontSize: THEME.fontSizes.minimum,
+      fit: "shrink",
     };
     boxes.push(takeaway);
     slide.addShape("roundRect", {
@@ -89,9 +102,12 @@ export function renderResultsSlide(
       line: { color: THEME.colors.divider, width: 1 },
     });
     slide.addText(content.takeaway, {
-      ...takeaway,
+      x: takeaway.x,
+      y: takeaway.y,
+      w: takeaway.w,
+      h: takeaway.h,
       fontFace: THEME.fonts.chinese,
-      fontSize: THEME.fontSizes.body,
+      fontSize: takeaway.fontSize,
       color: THEME.colors.primary,
       bold: true,
       align: "center",

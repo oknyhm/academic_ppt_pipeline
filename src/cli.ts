@@ -1,7 +1,5 @@
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
-import { parse } from "yaml";
-import { DeckSchema, type Deck } from "./types.js";
+import type { Deck } from "./types.js";
+import { validateDeckFile } from "./validators/index.js";
 
 const DEFAULT_DECK_PATH = "content/deck.yaml";
 
@@ -13,19 +11,23 @@ function printDeckSummary(deck: Deck): void {
   }
 }
 
-async function loadDeck(path: string): Promise<Deck> {
-  const source = await readFile(resolve(process.cwd(), path), "utf8");
-  return DeckSchema.parse(parse(source));
-}
-
 async function main(): Promise<void> {
   const [command = "validate", deckPath = DEFAULT_DECK_PATH] = process.argv.slice(2);
   if (command !== "validate") {
     throw new Error(`Unsupported command: ${command}. Use: validate [deck-path]`);
   }
 
-  const deck = await loadDeck(deckPath);
-  printDeckSummary(deck);
+  const result = await validateDeckFile(deckPath);
+  if (result.deck) printDeckSummary(result.deck);
+  for (const warning of result.report.warnings)
+    console.warn(`Warning [${warning.code}]: ${warning.message}`);
+  for (const error of result.report.errors)
+    console.error(`Error [${error.code}]: ${error.message}`);
+  console.log(
+    `Validation report: output/validation-report.json (${result.report.summary.errors} error(s), ${result.report.summary.warnings} warning(s))`,
+  );
+  console.log(result.report.manualReviewMessage);
+  if (!result.report.valid) process.exitCode = 1;
 }
 
 main().catch((error: unknown) => {

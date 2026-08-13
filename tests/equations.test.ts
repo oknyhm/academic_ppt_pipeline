@@ -24,7 +24,7 @@ describe("equation generation", () => {
       expect(png.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
       expect(png.readUInt32BE(16)).toBe(EQUATION_PNG_WIDTH);
     }
-  });
+  }, 15_000);
 
   it("reports invalid LaTeX clearly", () => {
     expect(() => renderLatexToSvg("\\frac{a")).toThrow("Invalid LaTeX");

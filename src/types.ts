@@ -49,6 +49,10 @@ export const TitleSlideSchema = z.object({
   author: z.string().min(1).optional(),
   affiliation: z.string().min(1).optional(),
   date: z.string().min(1).optional(),
+  illustrationId: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Illustration id must be lowercase kebab-case.")
+    .optional(),
 });
 export type TitleSlide = z.infer<typeof TitleSlideSchema>;
 

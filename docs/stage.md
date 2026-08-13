@@ -1,5 +1,63 @@
 # 阶段变更留痕
 
+## 阶段 15：Codex 内置生图双通道与 QA 边界加固
+
+### 为什么修改？
+
+原有可选插图流水线只有 Image API 入口，容易让使用者误以为 `npm run images` 能调用 Codex 对话内置 imagegen；同时需要让内置生成结果与 API 结果共用可验证的资产契约。预览流水线也需要更明确地处理缺失工具、陈旧预览和项目输出边界，避免自动检查结果被误读。
+
+### 修改内容
+
+- 将 Codex 内置 imagegen 定为首选交互通道，按当前官方说明登记其 `gpt-image-2` 模型；明确它不能由 npm、Node.js 或 CI 直接调用，也不需要仓库的 `OPENAI_API_KEY`。
+- 增加 `images:plan` → Codex 会话逐项生图与视觉审查 → `images:register` → `images:verify` 工作流；计划命令只输出状态，不伪装成生图命令。
+- 保留 `images:api` 作为显式无人值守/批量通道，`images` 仅为兼容别名；缺少 API key 时安全跳过，核心 `build` 无 AI 图片仍使用原生回退成功运行。
+- 两条通道统一使用 manifest v2，记录执行器、模型、提示词/请求/资产哈希、实际像素、稳定输出路径和登记时间；`images:verify` 会把执行器对应的模型、质量和请求哈希也纳入过期判断；规范提示词源增加人工编写的 `alt`。
+- 为 `title-slide` 增加语义 `illustrationId`：只有提示词、manifest 与 PNG 哈希一致时才在封面局部使用插图；缺失或过期时只告警并回退到原生主题。
+- 登记流程验证稳定 ID、完整 PNG 和精确像素，以原子写入保护资产与 manifest，并要求人工确认后才能替换已登记结果。
+- 继续区分验证器的阻断结构错误与非阻断视觉质量告警；最终验收环境仍为 Microsoft PowerPoint 2024。
+- 加固预览发布边界：仅向项目 `preview/` 发布，拒绝符号链接/junction；缺 LibreOffice 时清除旧 PDF/PNG，缺栅格器时仅保留本轮 PDF并清除旧 PNG，转换失败不发布半成品。
+- 保持 `output/generated/` 与 `output/final-edited.pptx` 隔离，不覆盖人工编辑版本。
+- 调整 `build` 顺序，先刷新验证报告再运行图表/公式生成；CLI 输出强制限制在 `output/generated/`。
+
+### 验证
+
+- `npm run images:plan` 与 `npm run images:verify` 通过：两张由 Codex 内置 imagegen 生成并人工审查的 1536×1024 PNG 均为 `current`，manifest v2 的提示词、像素和文件哈希一致。
+- `npm run format:check`、`npm run typecheck` 与 `npm run lint` 均通过。
+- `npm test` 通过：7 个测试文件、30 项测试全部成功；覆盖生图登记/过期检测、输出边界、完整几何问题收集、精确重叠授权、字号/文本告警、PPTX SVG/PNG 兼容结构。
+- `npm run validate` 通过并刷新 `output/validation-report.json`：10 页、0 个错误、5 个非阻断告警（2 个示例文本密度告警和 3 个连接线人工检查提示）。
+- `npm run build:all` 通过：生成 10 页 `output/generated/sample.pptx`、`preview/sample.pdf` 与 `preview/slide-1.png` 至 `slide-10.png`。
+- 临时移走封面 PNG 后再次生成成功：报告 `optional-illustration-fallback` 告警并产出原生主题封面；恢复资产后重新验证为 0 个错误。
+- 显式尝试把 CLI 输出写到 `output/final-edited.pptx` 被拒绝，且未创建/覆盖该文件。
+- 已逐页检查 10 张预览：AI 封面插图仅位于右侧局部，文本仍可编辑；公式、流程图和图表均可见，未发现裁切、空白页或明显非预期重叠。
+- 已在临时副本中实测缺 LibreOffice、缺 PDF 栅格器、junction 越界与栅格器缺页分支：陈旧产物清理、事务回滚和退出状态均符合文档。
+- 尝试用 PowerPoint COM 自动打开最终文件，但当前非交互 Windows 登录会话返回 `0x80070520`（登录会话不存在），未能启动 PowerPoint；这不是 PPTX 修复报错。仍需在用户桌面会话的 Microsoft PowerPoint 2024 中打开文件，确认无修复提示并完成目标渲染器人工验收。
+
+## 阶段 14：PPT 预览与统一质量检查流水线
+
+### 为什么修改？
+
+现有生成器能在写入时检查部分布局几何问题，但缺少可独立运行、可供 CI 读取的统一验证报告，也缺少把 PPTX 转为逐页图片进行快速视觉巡检的可选流水线。需要在不引入核心桌面依赖、不触碰人工编辑版本的前提下补齐这两部分。
+
+### 修改内容
+
+- 新增 `src/validators/`，统一检查 YAML/Zod schema、重复 slide ID、缺失或损坏资产、Box 尺寸/越界、非预期重叠、组件声明字号和文本密度。
+- 结构错误会阻断验证和核心构建；字号、文本密度与自动视觉检查只记录为告警。统一结果写入 `output/validation-report.json`，并明确提示仍需 PowerPoint 人工验收。
+- 新增 `scripts/render-preview.ps1` 与 `npm run preview`：可选调用 LibreOffice 生成 `preview/sample.pdf`，再优先用 Poppler `pdftoppm`、回退到 ImageMagick，生成 `preview/slide-*.png`。
+- LibreOffice 或 PDF 栅格器未安装时输出安装/PATH 提示并以状态码 0 跳过，不影响核心构建。
+- 新增 `npm run build:all`，按顺序执行核心 `build` 和可选 `preview`。
+- 所有生成文件限定在 `output/generated/`、`output/validation-report.json` 和 `preview/`；不会覆盖 `output/final-edited.pptx`。
+- 更新 README、架构、内容 schema 验证说明和故障排除文档。
+
+### 验证
+
+- `npm run format:check`、`npm run typecheck` 和 `npm run lint` 均通过。
+- `npm test` 通过：6 个测试文件、21 项测试全部成功。
+- `npm run validate` 通过并写入完整报告：10 页、0 个错误、2 个文本密度告警。
+- `npm run build:all` 通过：重新生成图表、复用未修改公式、生成 10 页 `sample.pptx`，随后完成 LibreOffice PDF 导出与 Poppler PNG 转换。
+- 实际生成 `preview/sample.pdf` 和 `preview/slide-1.png` 至 `preview/slide-10.png`；逐页检查未发现空白页、裁切或明显非预期重叠，第 2 页内容偏密与自动报告告警一致。
+- 临时移除工具 PATH 后执行预览脚本，确认缺少 LibreOffice 时给出安装提示并以状态码 0 安全跳过。
+- 使用本机 Microsoft PowerPoint 2024 打开 `output/generated/sample.pptx`，成功识别 10 页且未触发内容修复提示。最终交付仍要求人工逐页复核。
+
 ## 阶段 13：可选 AI 概念插图流水线
 
 ### 为什么修改？

@@ -429,11 +429,18 @@ Provide `.env.example` containing variable names but no real values.
 
 Do not log secrets.
 
-## Image generation API rules
+## Image generation rules
 
 Image generation is optional and isolated from the core build.
 
-The core PPT build must still work when no image API key is configured.
+The preferred interactive path is the Codex built-in image generation tool. It does not require the
+repository's `OPENAI_API_KEY` and cannot be invoked by npm, Node.js, or CI. When the user asks Codex to
+generate an illustration, Codex must read `content/image-prompts.yaml`, use the built-in image tool,
+visually review the result, copy the selected PNG into the workspace, and register it with the shared
+asset manifest. Never claim that an npm script directly invoked the Codex built-in tool.
+
+The OpenAI Image API is an explicit opt-in path for unattended or batch runs. The core PPT build must
+still work when no image API key is configured.
 
 Image generation tasks must:
 
@@ -444,6 +451,11 @@ Image generation tasks must:
 * record prompt and model metadata
 * never fabricate scientific evidence
 * never place generated text or numbers into authoritative slides
+
+Both Codex-built-in and API-generated images must use the same prompt IDs, output paths, hashes, and
+`assets/generated/manifest.json` contract. A generated image is not accepted until it has been visually
+reviewed and registered. Do not leave the only copy under a Codex-managed temporary or generated-images
+directory.
 
 Generated images are decorative or conceptual only.
 

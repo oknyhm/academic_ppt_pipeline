@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "source": "content/image-prompts.yaml",
+  "images": {
+    "representation-learning-concept": {
+      "executor": "codex-built-in",
+      "prompt": "Create a conceptual scientific illustration showing unstructured information becoming progressively organized through layered geometric transformations. Horizontal 3:2 composition on a very light academic background. On the left, sparse softly colored particles and simple geometric fragments; in the center, several translucent transformation layers or planes; on the right, a compact orderly latent representation made of aligned blue geometric elements. Refined restrained academic visual language, subtle deep navy and pale blue gradients, generous whitespace, crisp but soft, no people, no brain icon, no charts, no experimental plots, no claims. no text, no labels, no numbers, no formula, no watermark.",
+      "model": "gpt-image-2",
+      "size": "1536x1024",
+      "quality": null,
+      "output": "assets/generated/representation-learning-concept.png",
+      "recordedAt": "2026-08-13T02:20:41.395Z",
+      "promptSha256": "ab4767a25d256abedf7c3aa9525db38a836fdc6cdb62db9244da239a601d0b6c",
+      "requestSha256": "77a27c95fc25f976e6fbb271625682d700b97ff76a66122c21328b1b77053acd",
+      "assetSha256": "8b5f6224be780cd5b5c9c8d3479c23e373c15412fa23d8b38a258427bfb1842e",
+      "actualWidth": 1536,
+      "actualHeight": 1024
+    },
+    "cover-neural-network-concept": {
+      "executor": "codex-built-in",
+      "prompt": "Create a restrained academic editorial illustration for a PowerPoint cover about neural-network fundamentals. Use a clean 3:2 horizontal composition with generous calm negative space on the left and the visual subject concentrated on the right. Show an abstract neural network as softly luminous connected nodes, thin flowing signal paths, and subtle layered translucent geometry suggesting information propagation. Use only a refined deep navy, academic blue, pale blue, white, and very light gray palette. Minimal, elegant, scientific, presentation-ready, soft depth, no dramatic glow, no cyberpunk, no people, no brain icon, no charts, no experimental evidence. no text, no labels, no numbers, no formula, no watermark.",
+      "model": "gpt-image-2",
+      "size": "1536x1024",
+      "quality": null,
+      "output": "assets/generated/cover-neural-network-concept.png",
+      "recordedAt": "2026-08-13T02:20:37.284Z",
+      "promptSha256": "667d74aa740f5d1bb0f8df1e7df8d8a32d67b88e27fb981f5c19faef43d6e93d",
+      "requestSha256": "c9d73d38dc6eaade7e66abcc43dc876e93581afae0567f7985494bea67026380",
+      "assetSha256": "a0eb0bff5bf686f0f332013f052421440406a07e635bba1c5f9c1e4962407571",
+      "actualWidth": 1536,
+      "actualHeight": 1024
+    }
+  }
+}

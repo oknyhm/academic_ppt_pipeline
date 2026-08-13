@@ -12,13 +12,21 @@ export function addContainedImage(
   id: string,
 ): ElementBox[] {
   const placement = containImage(size, frame);
+  const overlapGroup = `image-${id}`;
   const frameBox: ElementBox = {
     id: `${id}-frame`,
     layer: "decoration",
+    kind: "shape",
     ...frame,
-    intentionalOverlap: true,
+    overlapGroup,
   };
-  const imageBox: ElementBox = { id, layer: "content", ...placement };
+  const imageBox: ElementBox = {
+    id,
+    layer: "content",
+    kind: "image",
+    ...placement,
+    overlapGroup,
+  };
   slide.addShape("rect", {
     ...frame,
     fill: { color: THEME.colors.surface },

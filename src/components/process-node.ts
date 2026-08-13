@@ -33,6 +33,7 @@ export function addProcessNode(
   h: number,
 ): ElementBox[] {
   const style = NODE_STYLES[node.emphasis];
+  const overlapGroup = `process-node-${node.id}`;
   const surface: ElementBox = {
     id: `node-${node.id}-surface`,
     layer: "decoration",
@@ -40,15 +41,21 @@ export function addProcessNode(
     y,
     w,
     h,
-    intentionalOverlap: true,
+    overlapGroup,
   };
   const label: ElementBox = {
     id: `node-${node.id}-label`,
     layer: "content",
+    kind: "text",
     x: x + 0.12,
     y: y + 0.18,
     w: w - 0.24,
     h: h - 0.36,
+    text: node.label,
+    fontSize: THEME.fontSizes.body,
+    minimumFontSize: THEME.fontSizes.minimum,
+    fit: "shrink",
+    overlapGroup,
   };
   slide.addShape("roundRect", {
     ...surface,
@@ -57,11 +64,14 @@ export function addProcessNode(
     line: { color: style.line, width: 1.2 },
   });
   slide.addText(node.label, {
-    ...label,
+    x: label.x,
+    y: label.y,
+    w: label.w,
+    h: label.h,
     align: "center",
     valign: "mid",
     fontFace: THEME.fonts.chinese,
-    fontSize: THEME.fontSizes.body,
+    fontSize: label.fontSize,
     color: style.text,
     margin: 0,
     fit: "shrink",

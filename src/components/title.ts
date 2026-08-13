@@ -6,10 +6,15 @@ export function addSlideTitle(slide: PptxSlide, title: string): ElementBox[] {
   const box: ElementBox = {
     id: "slide-title",
     layer: "content",
+    kind: "text",
     x: SAFE_MARGINS.left,
     y: 0.48,
     w: 12.23,
     h: 0.48,
+    text: title,
+    fontSize: THEME.fontSizes.slideTitle,
+    minimumFontSize: THEME.fontSizes.minimum,
+    fit: "shrink",
   };
   const divider: ElementBox = {
     id: "title-divider",
@@ -25,7 +30,7 @@ export function addSlideTitle(slide: PptxSlide, title: string): ElementBox[] {
     w: box.w,
     h: box.h,
     fontFace: THEME.fonts.chinese,
-    fontSize: THEME.fontSizes.slideTitle,
+    fontSize: box.fontSize,
     bold: true,
     color: THEME.colors.primary,
     margin: 0,

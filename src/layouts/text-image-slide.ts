@@ -49,16 +49,24 @@ export function renderTextImageSlide(
     const caption: ElementBox = {
       id: "image-caption",
       layer: "content",
+      kind: "text",
       x: imageFrame.x,
       y: 6.52,
       w: imageFrame.w,
       h: 0.2,
+      text: content.imageCaption,
+      fontSize: THEME.fontSizes.caption,
+      minimumFontSize: THEME.fontSizes.minimum,
+      fit: "shrink",
     };
     boxes.push(caption);
     slide.addText(content.imageCaption, {
-      ...caption,
+      x: caption.x,
+      y: caption.y,
+      w: caption.w,
+      h: caption.h,
       fontFace: THEME.fonts.chinese,
-      fontSize: THEME.fontSizes.caption,
+      fontSize: caption.fontSize,
       color: THEME.colors.textSecondary,
       align: "center",
       margin: 0,

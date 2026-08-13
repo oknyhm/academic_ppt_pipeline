@@ -1,12 +1,14 @@
 # Structured Academic PPT Pipeline
 
-一个以结构化 YAML 内容驱动的学术 PowerPoint 构建项目。当前版本可验证 YAML，并生成含可编辑标题、正文、页脚和页码的最小 PowerPoint。
+一个以结构化 YAML 内容驱动的学术 PowerPoint 构建项目。当前版本支持五种注册布局、可编辑文本与原生图形、可复现图表和公式资产，并提供静态验证与可选逐页预览。
 
 ## Prerequisites
 
 - Node.js 22 或更高版本
 - npm 10 或更高版本
 - Windows 11 / PowerShell（主要开发环境）
+- 可选：LibreOffice（将 PPTX 导出为 PDF）
+- 可选：Poppler 的 `pdftoppm`，或作为回退的 ImageMagick（将 PDF 转为逐页 PNG）
 
 ## Quick start
 
@@ -14,6 +16,8 @@
 npm install
 npm run validate
 npm run build
+npm run preview
+npm run build:all
 npm run typecheck
 npm run lint
 npm test
@@ -32,17 +36,34 @@ npx tsx src/cli.ts validate path/to/deck.yaml
 - 重复页面 ID 检查与页面摘要输出
 - TypeScript、ESLint、Prettier 和 Vitest 工具链
 
-`npm run build` 会生成 `output/generated/sample.pptx`。当前支持 `title`、`text` 和 `text-image` 布局；`text-image` 只接受本地 PNG/JPEG 文件，缺失资产会中止构建并显示其绝对路径。
-
-当前不包含图像 API、LaTeX/MathJax、Mermaid、LibreOffice、图表、公式、流程图或复杂动画。
-
-> Current implementation note: the two preceding scaffold-era sentences are obsolete. The project now supports all five registered layouts, PNG/JPEG/SVG assets, reproducible charts, MathJax equations, and native diagrams. AI illustrations are optional only; they are not part of `npm run build` and are never used as technical evidence.
+`npm run build` 会生成 `output/generated/sample.pptx`。五种注册布局均支持本地 PNG/JPEG/SVG 资产，缺失或损坏资产会在写入 PPTX 前报告。AI 插图和 LibreOffice 预览均为隔离的可选分支，不属于核心构建依赖；当前不接入 Mermaid、Graphviz、TikZ 或复杂动画。
 
 ## Project conventions
 
 - 规范内容文件为 `content/deck.yaml`。
-- 页面通过稳定的 `id` 和 `type` 声明，不在 YAML 中写入坐标。
-- 未来生成的 `.pptx` 只能写入 `output/generated/`，不得覆盖 `output/final-edited.pptx`。
+- 页面通过稳定的 `id` 和 `layout` 声明，不在 YAML 中写入坐标。
+- 生成的 `.pptx` 只能写入 `output/generated/`；校验报告写入 `output/validation-report.json`，预览文件写入 `preview/`。
+- 构建和预览流程不得写入或覆盖人工编辑版本 `output/final-edited.pptx`。
+
+## Validation and preview
+
+`npm run validate` 对 `content/deck.yaml` 执行统一静态检查：
+
+- YAML/Zod schema 错误和重复 slide ID
+- 缺失或损坏的图片、图表、公式等本地资产
+- 布局返回的 Box 尺寸、页面越界和非预期重叠
+- 组件声明的字号下限
+- 标题、正文、节点等文本长度与内容密度
+
+Schema、重复 ID、资产、Box 尺寸/越界和非预期重叠属于结构错误，会使校验及核心构建失败。字号和文本密度属于质量告警，不会单独阻断构建。每次校验都会生成 `output/validation-report.json`，其中同时记录错误、告警以及仍需人工复核的说明。
+
+`npm run preview` 调用 `scripts/render-preview.ps1`。脚本在检测到 LibreOffice 时，将 `output/generated/sample.pptx` 导出为 `preview/sample.pdf`；随后优先使用 Poppler 的 `pdftoppm`、找不到时回退到 ImageMagick 与 Ghostscript，生成 `preview/slide-*.png`。未安装 LibreOffice 时会清除旧 PDF/PNG，避免把历史预览误认为当前结果；只有 PDF 栅格器缺失时会保留本轮新 PDF、清除旧 PNG。两种缺工具情况都会打印安装与 PATH 提示并以成功状态跳过，因此不影响核心 `npm run build`。
+
+```powershell
+npm run build:all
+```
+
+`build:all` 等价于先完成核心 `build`，再尝试生成预览。自动验证和预览只用于发现明显问题；最终交付前仍必须在目标 Microsoft PowerPoint 2024 中人工检查全部页面。
 
 ## Layout system
 
@@ -56,7 +77,7 @@ Chart source data is stored under `data/`; `scripts/generate_charts.py` validate
 npm run charts
 ```
 
-`npm run build` runs the chart step first. Results slides may reference a local chart asset; the chart is inserted as an image while the slide title and takeaway remain editable PowerPoint text. The supplied CSV values are traceable published examples: SwAV Table 5 and SimCLR Table B.2, whose source references are declared in `content/deck.yaml`.
+`npm run build` refreshes validation before running the chart step. Results slides may reference a local chart asset; the chart is inserted as an image while the slide title and takeaway remain editable PowerPoint text. The supplied CSV values are traceable published examples: SwAV Table 5 and SimCLR Table B.2, whose source references are declared in `content/deck.yaml`.
 
 ## Equations
 
@@ -70,14 +91,25 @@ Unchanged formulas are skipped. Each formula produces a transparent SVG source a
 
 ## Optional AI illustrations
 
-AI illustrations are isolated from the core PowerPoint build. `npm run build` never calls the image API and the title layout continues to use its native pure-color background when no generated illustration exists. To opt in, set `OPENAI_API_KEY` in your PowerShell environment, then run:
+AI 插图与核心 PowerPoint 构建隔离，只能用于封面或概念性装饰，不能作为实验结果、公式、技术架构或研究证据。首选流程是在 Codex 交互会话中使用内置 imagegen（官方当前说明其使用 `gpt-image-2`）；该能力不能被 npm、Node.js 或 CI 直接调用，也不读取仓库的 `OPENAI_API_KEY`：
+
+```powershell
+npm run images:plan
+# 请 Codex 按计划逐项调用内置 imagegen，并对结果做视觉审查。
+npm run images:register -- --id <prompt-id> --source <reviewed-png-path>
+npm run images:verify
+```
+
+`images:plan` 只生成 `output/image-generation-plan.json`，列出 `current`、`missing`、`stale` 或 `invalid` 状态；它不会自行生成图片。Codex 选定的结果必须先复制到可访问路径，再由 `images:register` 校验 PNG、精确像素和稳定 ID，并登记到 `assets/generated/manifest.json`。替换已登记但过期的资产需要在人工复核后显式加 `--replace`。
+
+需要无人值守或批量运行时，可显式选择 Image API 通道：
 
 ```powershell
 $env:OPENAI_API_KEY = "your_key"
-npm run images
+npm run images:api
 ```
 
-`content/image-prompts.yaml` permits only `cover` and `conceptual` images. Every prompt must prohibit text, labels, numbers, formulas, and watermarks. The optional official `openai` SDK uses the Image API with `gpt-image-2`; generated PNGs and prompt/model/size/time/hash metadata are stored in `assets/generated/`. Unchanged requests are skipped. Missing keys and transient API failures do not block `npm run build`.
+`npm run images` 是 `images:api` 的兼容别名，不代表调用 Codex 内置工具。两条通道共用 `content/image-prompts.yaml`、稳定输出路径和 manifest v2；提示词源保存人工编写的 `alt`，manifest 保存执行器、提示词/请求/文件哈希及实际像素。封面可用语义字段 `illustrationId` 引用已登记插图；有效图只占局部装饰区域，缺失或过期时输出 warning 并自动回退到原生形状。未设置 API key 时 API 通道正常跳过。`npm run build` 不调用任何生图命令，即使没有 AI 图片也能完成核心构建。
 
 ## Editable process diagrams
 

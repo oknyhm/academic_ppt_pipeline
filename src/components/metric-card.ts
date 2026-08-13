@@ -12,33 +12,62 @@ export function addMetricCard(
   id: string,
 ): ElementBox[] {
   const h = 1.45;
+  const surfaceId = `${id}-surface`;
+  const labelId = `${id}-label`;
+  const valueId = `${id}-value`;
+  const detailId = `${id}-detail`;
   const surface: ElementBox = {
-    id: `${id}-surface`,
+    id: surfaceId,
     layer: "decoration",
     x,
     y,
     w,
     h,
-    intentionalOverlap: true,
+    allowedOverlapWith: [labelId, valueId, ...(metric.detail ? [detailId] : [])],
   };
   const label: ElementBox = {
-    id: `${id}-label`,
+    id: labelId,
     layer: "content",
+    kind: "text",
     x: x + 0.22,
     y: y + 0.2,
     w: w - 0.44,
     h: 0.24,
+    text: metric.label,
+    fontSize: THEME.fontSizes.caption,
+    minimumFontSize: THEME.fontSizes.minimum,
+    fit: "shrink",
+    allowedOverlapWith: [surfaceId],
   };
   const value: ElementBox = {
-    id: `${id}-value`,
+    id: valueId,
     layer: "content",
+    kind: "text",
     x: x + 0.22,
     y: y + 0.52,
     w: w - 0.44,
     h: 0.4,
+    text: metric.value,
+    fontSize: 24,
+    minimumFontSize: THEME.fontSizes.minimum,
+    fit: "shrink",
+    allowedOverlapWith: [surfaceId],
   };
   const detail: ElementBox | undefined = metric.detail
-    ? { id: `${id}-detail`, layer: "content", x: x + 0.22, y: y + 1.02, w: w - 0.44, h: 0.2 }
+    ? {
+        id: detailId,
+        layer: "content",
+        kind: "text",
+        x: x + 0.22,
+        y: y + 1.02,
+        w: w - 0.44,
+        h: 0.2,
+        text: metric.detail,
+        fontSize: THEME.fontSizes.caption,
+        minimumFontSize: THEME.fontSizes.minimum,
+        fit: "shrink",
+        allowedOverlapWith: [surfaceId],
+      }
     : undefined;
   slide.addShape("roundRect", {
     x,
@@ -50,17 +79,23 @@ export function addMetricCard(
     line: { color: THEME.colors.divider, width: 1 },
   });
   slide.addText(metric.label, {
-    ...label,
+    x: label.x,
+    y: label.y,
+    w: label.w,
+    h: label.h,
     fontFace: THEME.fonts.chinese,
-    fontSize: THEME.fontSizes.caption,
+    fontSize: label.fontSize,
     color: THEME.colors.textSecondary,
     margin: 0,
     fit: "shrink",
   });
   slide.addText(metric.value, {
-    ...value,
+    x: value.x,
+    y: value.y,
+    w: value.w,
+    h: value.h,
     fontFace: THEME.fonts.english,
-    fontSize: 24,
+    fontSize: value.fontSize,
     bold: true,
     color: THEME.colors.primary,
     margin: 0,
@@ -68,9 +103,12 @@ export function addMetricCard(
   });
   if (detail)
     slide.addText(metric.detail ?? "", {
-      ...detail,
+      x: detail.x,
+      y: detail.y,
+      w: detail.w,
+      h: detail.h,
       fontFace: THEME.fonts.chinese,
-      fontSize: THEME.fontSizes.caption,
+      fontSize: detail.fontSize,
       color: THEME.colors.textSecondary,
       margin: 0,
       fit: "shrink",

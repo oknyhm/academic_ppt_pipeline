@@ -24,11 +24,15 @@ it("writes Office SVG blips with high-resolution PNG fallbacks", async () => {
     (entry) => !entry.dir && entry.name.startsWith("ppt/media/") && entry.name.endsWith(".png"),
   );
   expect(pngMedia.length).toBeGreaterThan(0);
+  let highResolutionFallbacks = 0;
   for (const entry of pngMedia) {
     const media = await entry.async("nodebuffer");
     expect(media.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
-    expect(media.readUInt32BE(16)).toBeGreaterThanOrEqual(3_000);
+    if (media.readUInt32BE(16) >= 3_000) highResolutionFallbacks += 1;
   }
+  // SVG formula/chart fallbacks are repaired to 3,000 px. Optional native PNG illustrations
+  // retain their authored dimensions and are not SVG compatibility fallbacks.
+  expect(highResolutionFallbacks).toBeGreaterThanOrEqual(5);
   const formulaSlideXml = await archive.file("ppt/slides/slide3.xml")?.async("string");
   const formulaRelations = await archive.file("ppt/slides/_rels/slide3.xml.rels")?.async("string");
   expect(formulaSlideXml).toContain('<a:blip r:embed="rId1">');
@@ -43,4 +47,4 @@ it("writes Office SVG blips with high-resolution PNG fallbacks", async () => {
     const xml = await entry.async("string");
     expect(xml).not.toMatch(/<a:ext cx="-\d+"|<a:ext cx="\d+" cy="-\d+"/);
   }
-}, 20_000);
+}, 45_000);

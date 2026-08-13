@@ -6,18 +6,27 @@ export function addFooter(slide: PptxSlide, deckTitle: string, pageNumber: numbe
   const footerBox = {
     id: "footer-title",
     layer: "content" as const,
+    kind: "text" as const,
     x: SAFE_MARGINS.left,
     y: SLIDE_HEIGHT - SAFE_MARGINS.bottom - 0.18,
     w: 10.9,
     h: 0.14,
+    text: deckTitle,
+    fontSize: THEME.fontSizes.footer,
+    minimumFontSize: 9,
+    fit: "shrink" as const,
   };
   const pageBox = {
     id: "page-number",
     layer: "content" as const,
+    kind: "text" as const,
     x: SLIDE_WIDTH - SAFE_MARGINS.right - 0.45,
     y: footerBox.y,
     w: 0.45,
     h: footerBox.h,
+    text: String(pageNumber),
+    fontSize: THEME.fontSizes.footer,
+    minimumFontSize: 9,
   };
   const divider: ElementBox = {
     id: "footer-divider",
@@ -40,7 +49,7 @@ export function addFooter(slide: PptxSlide, deckTitle: string, pageNumber: numbe
     w: footerBox.w,
     h: footerBox.h,
     fontFace: THEME.fonts.english,
-    fontSize: THEME.fontSizes.footer,
+    fontSize: footerBox.fontSize,
     color: THEME.colors.textSecondary,
     margin: 0,
     fit: "shrink",
@@ -52,7 +61,7 @@ export function addFooter(slide: PptxSlide, deckTitle: string, pageNumber: numbe
     h: pageBox.h,
     align: "right",
     fontFace: THEME.fonts.english,
-    fontSize: THEME.fontSizes.footer,
+    fontSize: pageBox.fontSize,
     color: THEME.colors.textSecondary,
     margin: 0,
   });

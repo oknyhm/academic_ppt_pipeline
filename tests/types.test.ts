@@ -4,7 +4,12 @@ import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
 import { DeckSchema } from "../src/types.js";
 import { getDiagramTextWarnings } from "../src/layouts/diagram-slide.js";
-import { assertElementsWithinBounds, assertNoUnexpectedOverlap } from "../src/utils/bounds.js";
+import {
+  assertElementsWithinBounds,
+  assertNoUnexpectedOverlap,
+  collectBoundsViolations,
+  collectUnexpectedOverlaps,
+} from "../src/utils/bounds.js";
 import { containImage, coverImage } from "../src/utils/image-fit.js";
 
 describe("DeckSchema", () => {
@@ -15,6 +20,10 @@ describe("DeckSchema", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.slides).toHaveLength(10);
+      expect(result.data.slides[0]).toMatchObject({
+        layout: "title-slide",
+        illustrationId: "cover-neural-network-concept",
+      });
       expect(result.data.slides.map((slide) => slide.layout)).toEqual([
         "title-slide",
         "text-slide",
@@ -103,6 +112,21 @@ describe("layout helpers", () => {
     ).toThrow("Element exceeds slide bounds");
   });
 
+  it("collects every invalid or out-of-bounds element and tolerates floating-point noise", () => {
+    expect(
+      collectBoundsViolations([
+        { id: "invalid", layer: "content", x: Number.NaN, y: 0, w: 1, h: 1 },
+        { id: "right", layer: "content", x: 13, y: 0, w: 1, h: 1 },
+        { id: "bottom", layer: "content", x: 0, y: 7.25, w: 1, h: 1 },
+        { id: "epsilon", layer: "content", x: 0, y: 0, w: 13.3330000001, h: 7.5 },
+      ]),
+    ).toEqual([
+      expect.objectContaining({ code: "invalid-dimensions", elementId: "invalid" }),
+      expect.objectContaining({ code: "element-out-of-bounds", elementId: "right" }),
+      expect.objectContaining({ code: "element-out-of-bounds", elementId: "bottom" }),
+    ]);
+  });
+
   it("rejects unexpected overlap but allows background overlap", () => {
     expect(() =>
       assertNoUnexpectedOverlap([
@@ -116,6 +140,32 @@ describe("layout helpers", () => {
         { id: "content", layer: "content", x: 1, y: 1, w: 2, h: 1 },
       ]),
     ).not.toThrow();
+  });
+
+  it("collects all overlaps and only permits explicitly related elements", () => {
+    const overlaps = collectUnexpectedOverlaps([
+      {
+        id: "surface",
+        layer: "decoration",
+        x: 1,
+        y: 1,
+        w: 4,
+        h: 3,
+        allowedOverlapWith: ["own-label"],
+      },
+      { id: "own-label", layer: "content", x: 1.2, y: 1.2, w: 1, h: 0.4 },
+      { id: "foreign-label", layer: "content", x: 2, y: 1.2, w: 1, h: 0.4 },
+      { id: "foreign-value", layer: "content", x: 2.5, y: 1.3, w: 1, h: 0.4 },
+      { id: "touching", layer: "content", x: 5, y: 1, w: 1, h: 1 },
+      { id: "connector", layer: "decoration", kind: "connector", x: 1, y: 1, w: 4, h: 2 },
+    ]);
+
+    expect(overlaps.map(({ firstId, secondId }) => [firstId, secondId])).toEqual([
+      ["surface", "foreign-label"],
+      ["surface", "foreign-value"],
+      ["own-label", "foreign-label"],
+      ["foreign-label", "foreign-value"],
+    ]);
   });
 
   it("warns when a diagram node label is too long", () => {

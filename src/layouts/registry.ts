@@ -11,6 +11,7 @@ import type { ImageSize } from "../utils/image-fit.js";
 export interface RenderContext {
   charts: ReadonlyMap<string, { path: string; size: ImageSize }>;
   images: ReadonlyMap<string, { path: string; size: ImageSize }>;
+  illustrations: ReadonlyMap<string, { path: string; size: ImageSize; alt: string }>;
 }
 
 export function renderLayout(
@@ -20,7 +21,11 @@ export function renderLayout(
 ): ElementBox[] {
   switch (content.layout) {
     case "title-slide":
-      return renderTitleSlide(slide, content);
+      return renderTitleSlide(
+        slide,
+        content,
+        content.illustrationId ? context.illustrations.get(content.illustrationId) : undefined,
+      );
     case "text-slide":
       return renderTextSlide(slide, content);
     case "text-image-slide": {

@@ -25,11 +25,11 @@ export function addArrowConnector(
   const connector: ElementBox = {
     id: `connector-${id}`,
     layer: "decoration",
+    kind: "connector",
     x: Math.min(startX, endX),
     y: Math.min(startY, endY),
     w: Math.abs(endX - startX),
     h: Math.max(0.01, Math.abs(endY - startY)),
-    intentionalOverlap: true,
   };
   slide.addShape("line", {
     x: Math.min(startX, endX),
@@ -49,16 +49,23 @@ export function addArrowConnector(
   const labelBox: ElementBox = {
     id: `connector-${id}-label`,
     layer: "overlay",
+    kind: "text",
     x: (startX + endX) / 2 - 0.55,
     y: (startY + endY) / 2 - 0.28,
     w: 1.1,
     h: 0.18,
-    intentionalOverlap: true,
+    text: label,
+    fontSize: THEME.fontSizes.caption,
+    minimumFontSize: THEME.fontSizes.minimum,
+    fit: "shrink",
   };
   slide.addText(label, {
-    ...labelBox,
+    x: labelBox.x,
+    y: labelBox.y,
+    w: labelBox.w,
+    h: labelBox.h,
     fontFace: THEME.fonts.chinese,
-    fontSize: THEME.fontSizes.caption,
+    fontSize: labelBox.fontSize,
     color: THEME.colors.textSecondary,
     align: "center",
     margin: 0,

@@ -19,16 +19,23 @@ export function addTextBlock(
     const heading: ElementBox = {
       id: `${id}-heading`,
       layer: "content",
+      kind: "text",
       x,
       y,
       w,
       h: headingHeight,
+      text: section.heading,
+      fontSize: THEME.fontSizes.sectionHeading,
+      minimumFontSize: THEME.fontSizes.minimum,
     };
     boxes.push(heading);
     slide.addText(section.heading, {
-      ...heading,
+      x: heading.x,
+      y: heading.y,
+      w: heading.w,
+      h: heading.h,
       fontFace: THEME.fonts.chinese,
-      fontSize: THEME.fontSizes.sectionHeading,
+      fontSize: heading.fontSize,
       bold: true,
       color: THEME.colors.secondary,
       margin: 0,
@@ -37,10 +44,15 @@ export function addTextBlock(
   const body: ElementBox = {
     id: `${id}-body`,
     layer: "content",
+    kind: "text",
     x,
     y: y + headingHeight + 0.08,
     w,
     h: bodyHeight,
+    text: [...(section.bullets ?? []), ...(section.paragraphs ?? [])].join("\n"),
+    fontSize: THEME.fontSizes.body,
+    minimumFontSize: THEME.fontSizes.minimum,
+    fit: "shrink",
   };
   boxes.push(body);
   const paragraphs = [
@@ -51,9 +63,12 @@ export function addTextBlock(
     ...(section.paragraphs ?? []).map((text) => ({ text, options: { breakLine: true } })),
   ];
   slide.addText(paragraphs, {
-    ...body,
+    x: body.x,
+    y: body.y,
+    w: body.w,
+    h: body.h,
     fontFace: THEME.fonts.chinese,
-    fontSize: THEME.fontSizes.body,
+    fontSize: body.fontSize,
     color: THEME.colors.textPrimary,
     margin: 0,
     paraSpaceAfterPt: 10,

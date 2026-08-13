@@ -2,15 +2,26 @@ images:
   - id: cover-neural-network-concept
     purpose: cover
     size: 1536x1024
+    alt: Abstract neural-network nodes and signal paths concentrated on the right side.
     prompt: >-
-      Restrained academic editorial illustration of an abstract neural network as softly connected
-      translucent nodes and flowing signal paths, deep navy and pale blue palette, generous negative
-      space for a presentation cover, calm scientific atmosphere, no text, no labels, no numbers,
-      no formula, no watermark.
+      Create a restrained academic editorial illustration for a PowerPoint cover about neural-network
+      fundamentals. Use a clean 3:2 horizontal composition with generous calm negative space on the left
+      and the visual subject concentrated on the right. Show an abstract neural network as softly luminous
+      connected nodes, thin flowing signal paths, and subtle layered translucent geometry suggesting
+      information propagation. Use only a refined deep navy, academic blue, pale blue, white, and very light
+      gray palette. Minimal, elegant, scientific, presentation-ready, soft depth, no dramatic glow, no
+      cyberpunk, no people, no brain icon, no charts, no experimental evidence. no text, no labels, no
+      numbers, no formula, no watermark.
   - id: representation-learning-concept
     purpose: conceptual
     size: 1536x1024
+    alt: Abstract particles reorganizing through layers into a compact learned representation.
     prompt: >-
-      Conceptual scientific illustration of information becoming progressively organized through layered
-      geometric transformations, clean academic visual language, subtle navy and blue gradients on a light
-      background, no experimental plots or claims, no text, no labels, no numbers, no formula, no watermark.
+      Create a conceptual scientific illustration showing unstructured information becoming progressively
+      organized through layered geometric transformations. Horizontal 3:2 composition on a very light
+      academic background. On the left, sparse softly colored particles and simple geometric fragments; in
+      the center, several translucent transformation layers or planes; on the right, a compact orderly latent
+      representation made of aligned blue geometric elements. Refined restrained academic visual language,
+      subtle deep navy and pale blue gradients, generous whitespace, crisp but soft, no people, no brain
+      icon, no charts, no experimental plots, no claims. no text, no labels, no numbers, no formula, no
+      watermark.
